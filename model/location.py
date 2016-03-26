@@ -1,11 +1,30 @@
 from model.schema import Location
 from core.distance_helpers import GISPoint, Within, Distance
+from core import validator
 
 
 class LocationManager(object):
 
+    ADD_LOCATION_SCHEMA = {
+        validator.Required('Name'): str,
+        validator.Required('Latitude'): validator.Coerce(float),
+        validator.Required('Longitude'): validator.Coerce(float)
+    }
+
+    LOCATIONS_NEAR_SCHEMA = {
+        validator.Required('Latitude'): validator.Coerce(float),
+        validator.Required('Longitude'): validator.Coerce(float),
+        validator.Optional('Distance', default=1000): validator.Coerce(float),
+        validator.Optional('Limit', default=5): validator.Coerce(int)
+    }
+
     def __init__(self, db):
         self.db = db
+
+    def api_add_location(self, params):
+        params = validator.validate(self.ADD_LOCATION_SCHEMA, params)
+        self.add_location(params['Name'], params['Longitude'], params['Latitude'])
+        return "Location Added."
 
     def add_location(self, name, longitude, latitude):
         """
@@ -19,6 +38,10 @@ class LocationManager(object):
 
         with self.db.session_scope() as session:
             session.add(location)
+
+    def api_locations_near(self, params):
+        params = validator.validate(self.LOCATIONS_NEAR_SCHEMA, params)
+        return self.locations_near(params['Longitude'], params['Latitude'], params['Distance'], params['Limit'])
 
     def locations_near(self, longitude, latitude, distance=1000, limit=5):
         """

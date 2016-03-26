@@ -15,3 +15,4 @@ These can all be installed using `pip install <package>`
  * psycopg2
  * sqlalchemy
  * geoalchemy2
+ * voluptuous

@@ -2,6 +2,24 @@ import functools
 import flask
 import json
 import datetime
+from core.validator import MultipleInvalid
+
+
+def get_db():
+    import feva
+    db = getattr(flask.g, 'db', None)
+    if db is None:
+        db = feva.db
+        setattr(flask.g, 'db', db)
+    return db
+
+
+def get_post_data():
+    return flask.request.get_json()
+
+
+def get_parameters():
+    return flask.request.args
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -29,6 +47,12 @@ def api_json_method(f):
                 result = dict(data=result, success=True)
             elif 'success' not in result:
                 result['success'] = True
+
+        except MultipleInvalid as e:
+            errors = []
+            for error in e.errors:
+                errors.append('%s: %s' % (error.msg, error.path[-1]))
+            result = dict(success=False, errors=errors, message='Validation Error')
 
         except Exception as e:
             result = dict(success=False, message="An unexpected error occurred: %s" % e)

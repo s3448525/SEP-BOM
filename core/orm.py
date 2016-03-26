@@ -11,7 +11,6 @@ class ORM(object):
         self.session_factory = sessionmaker(bind=self.engine)
         schema.metadata.create_all(self.engine)
 
-
     @contextmanager
     def session_scope(self):
         """
