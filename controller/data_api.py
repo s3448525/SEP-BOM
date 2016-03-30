@@ -1,12 +1,13 @@
 from flask import Blueprint
 from flask.views import MethodView
-import core.web as web
+
+import model.helpers.web as web
 from model.location import LocationManager
 
-api_comparisons_bp = Blueprint('comparisons', 'comparisons', url_prefix='/api')
+api_data_bp = Blueprint('comparisons', 'comparisons', url_prefix='/api')
 
 
-@api_comparisons_bp.route('/')
+@api_data_bp.route('/')
 @web.api_json_method
 def test():
     return "hello world"
@@ -25,4 +26,4 @@ class LocationApiHandler(MethodView):
         return lm.api_add_location(web.get_post_data())
 
 
-api_comparisons_bp.add_url_rule('/locations/', view_func=LocationApiHandler.as_view('locations'))
+api_data_bp.add_url_rule('/locations/', view_func=LocationApiHandler.as_view('locations'))

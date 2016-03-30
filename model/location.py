@@ -1,6 +1,6 @@
+from model.helpers.distance import GISPoint, Within, Distance
+from model.helpers import validator
 from model.schema import Location
-from core.distance_helpers import GISPoint, Within, Distance
-from core import validator
 
 
 class LocationManager(object):
