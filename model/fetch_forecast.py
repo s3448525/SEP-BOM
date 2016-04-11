@@ -30,8 +30,11 @@ def fetch_forecast(fc_filter={'name': [], 'after': None}):
             forecasts = fetch_opendap(detail, fc_filter)
         else:
             raise Exception('unsupported fetch method')
+        # Apply post processing.
+        post_process_forecasts(forecasts, detail)
         # Yield each forecast.
         for forecast in forecasts:
+            # Yield.
             yield forecast
 
 
@@ -69,13 +72,40 @@ def fetch_opendap(detail, fc_filter):
         # Open dataset via opendap.
         print('Fetching '+url)
         ds = Dataset(url, mode='r')
-        # Read data.
-        forecast = detail.copy()
-        forecast['netcdf'] = ds
-        forecasts.append(forecast)
+        # Create a forecast for each time index.
+        time_index = 0
+        while time_index < len(ds.variables[detail['grid_name']]):
+            # Create the forecast based on the config details.
+            forecast = detail.copy()
+            forecast['url'] = url
+            # Copy the relevant data into the forecast.
+            forecast['lat_list'] = ds.variables[detail['lat_name']]
+            forecast['lon_list'] = ds.variables[detail['lon_name']]
+            forecast['values'] = ds.variables[detail['grid_name']][time_index,:,:]
+            forecast['created_time'] = detail['created_time_func'](ds, forecast)
+            forecast['time'] = detail['forecast_time_func'](
+                ds.variables['time'][time_index], forecast['created_time'], ds, detail)
+            # Put the netcdf object into the forecast for debugging purpurses.
+            #ds.close()
+            forecast['netcdf'] = ds
+            #
+            forecasts.append(forecast)
+            break #just for debugging, remove this line
         break #just for debugging, remove this line
     # Return data.
     return forecasts
+
+
+def post_process_forecasts(forecasts, detail):
+    prev_values = None
+    for fc in forecasts:
+        # Interpret the time value.
+#        if detail['time_type'] == 'UnixTime':
+#            forecast['time'] = Datetime.fromtimestamp(forecast['time'])
+        # Optionally subtract previous values from the current values (usefull
+        # for un-accumulating values).
+        if detail['sub_prev'] and prev_values:
+            forecast['values'] = forecast['time'] - prev_values
 
 
 def main():
@@ -93,14 +123,22 @@ def main():
         for var_name in fc['netcdf'].variables:
             print(var_name, end=' ')
         print()
-        print('  Grid '+fc['grids'][0]+' attributes:')
-        print(fc['netcdf'].variables[fc['grids'][0]].ncattrs())
-        print('  Grid '+fc['grids'][0]+' dimensions:')
-        for dim in fc['netcdf'].variables[fc['grids'][0]].dimensions:
+        print('  Grid '+fc['grid_name']+' attributes:')
+        for att in fc['netcdf'].variables[fc['grid_name']].ncattrs():
+            print(att, fc['netcdf'].variables[fc['grid_name']].getncattr(att), end=' ')
+            print()
+        print('  Grid '+fc['grid_name']+' dimensions:')
+        for dim in fc['netcdf'].variables[fc['grid_name']].dimensions:
             print('    '+dim, end=' ')
         print()
-        print('  Grid '+fc['grids'][0]+' sample:')
-        print(fc['netcdf'].variables[fc['grids'][0]][0][0][0:5])
+        print('  Grid '+fc['grid_name']+' shape:')
+        print(fc['netcdf'].variables[fc['grid_name']].shape)
+        print('  Create Time: ', end='')
+        print(fc['created_time'])
+        print('  Forecast Time: ', end='')
+        print(fc['time'])
+        print('  Values:')
+        print(fc['values'])
 
 if __name__ == '__main__':
     main()

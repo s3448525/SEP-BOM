@@ -13,7 +13,12 @@ forecast_config.append({
     'urls': ['ftp://ftp.bom.gov.au/adfd/IDV71097_VIC_WxPrecipitation_SFC.nc.gz'],
     'url_generator':False,
     'type': 'rain',
-    'grids': ['WxPrecipitation_SFC'],
+    'grid_name': 'WxPrecipitation_SFC',
+    'lat_name': 'latitude',
+    'lon_name': 'longitude',
+    'forecast_time_func': None, #TODO
+    'created_time_func': None, #TODO
+    'sub_prev': False,
     'gzip': True,
     'user': '',
     'passwd': ''
@@ -44,13 +49,30 @@ def access_vt_fc_urls():
         result.append(base_url + '{:>03}'.format(x) + '_surface.nc')
         #result.append(base_url + '{:>03}'.format(x) + '_surface.nc.dods')
     return result
+def access_vt_fc_created_time(dataset, forecast):
+    """ Get the time the forecast was created, for the BOM ACCESS VT Rain Forecast configuration. """
+    string_offset = len('http://opendap.bom.gov.au/thredds/dodsC/bmrc/access-vt-fc/ops/surface/')
+    time_string = forecast['url'][string_offset:string_offset+10]
+    return datetime.datetime(
+        year=int(time_string[:4]),
+        month=int(time_string[4:6]),
+        day=int(time_string[6:8]),
+        hour=int(time_string[8:10]))
+def access_vt_fc_forecast_time(raw_time, created_time, dataset, detail):
+    """ Get the time the forecast applies, for the BOM ACCESS VT Rain Forecast configuration. """
+    return created_time + datetime.timedelta(days=raw_time)
 forecast_config.append({
     'name': 'BOM ACCESS VT Rain',
     'method': 'opendap',
     'urls': [],
     'url_generator': access_vt_fc_urls,
     'type': 'rain',
-    'grids': ['accum_prcp']
+    'grid_name': 'accum_prcp',
+    'lat_name': 'lat',
+    'lon_name': 'lon',
+    'forecast_time_func': access_vt_fc_forecast_time,
+    'created_time_func': access_vt_fc_created_time,
+    'sub_prev': True
 })
 
 #
