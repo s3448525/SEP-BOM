@@ -7,6 +7,9 @@ import datetime
 
 def fetch_forecast(fc_filter={'name': [], 'after': None}):
     '''
+    A generator function that fetches the forecast grids specifed by the
+    configuration file, optionally filtered by the given filter.
+
     fc_filter can be used to limit which forecasts are fetched.
     fc_filter['name'] is a list of forecast names, forecasts will only be
         fetched if their name is in the list or the list is empty.
@@ -15,20 +18,21 @@ def fetch_forecast(fc_filter={'name': [], 'after': None}):
     '''
     config = fetch_config.forecast_config
     print(config)
-    forecasts = []
     for detail in config:
         # Call the url generator if one is present.
         if detail['url_generator']:
             detail['urls'] = detail['url_generator']()
-        # Fetch via the specified method.
+        # Fetch forecast(s) via the specified method.
         print(detail)
         if detail['method'] == 'ftp':
-            forecasts.extend(fetch_ftp(detail, fc_filter))
+            forecasts = fetch_ftp(detail, fc_filter)
         elif detail['method'] == 'opendap':
-            forecasts.extend(fetch_opendap(detail, fc_filter))
+            forecasts = fetch_opendap(detail, fc_filter)
         else:
             raise Exception('unsupported fetch method')
-    return forecasts
+        # Yield each forecast.
+        for forecast in forecasts:
+            yield forecast
 
 
 def fetch_ftp(detail, fc_filter):
@@ -76,8 +80,7 @@ def fetch_opendap(detail, fc_filter):
 
 def main():
     ''' Display some details of fetched forecasts. '''
-    forecasts = fetch_forecast()
-    for fc in forecasts:
+    for fc in fetch_forecast():
         print('### Forecast '+fc['name']+' ###')
         print('  Type: '+fc['type'])
         print('  NetCDF Groups:', len(fc['netcdf'].groups))
