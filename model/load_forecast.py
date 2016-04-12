@@ -39,11 +39,11 @@ class ForecastLoader(object):
                     # Prepare to save the value.
                     with self.db.session_scope() as session:
                         session.add(ForecastValue)
-                    j++
+                    j += 1
                 # Save pending values.
                 with self.db.session_scope() as session:
                     session.commit()
-                i++
+                i += 1
 
 if __name__ == '__main__':
     fc_loader = ForecastLoader(TODO_get_DB) #TODO

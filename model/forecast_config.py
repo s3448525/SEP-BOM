@@ -1,13 +1,10 @@
 import datetime
 
 
-#
-# Forecast
-#
-forecast_config = []
+configs = []
 
 # BOM Official Rain Forecast
-forecast_config.append({
+configs.append({
     'name': 'BOM Official Rain VIC',
     'method': 'ftp',
     'urls': ['ftp://ftp.bom.gov.au/adfd/IDV71097_VIC_WxPrecipitation_SFC.nc.gz'],
@@ -17,7 +14,7 @@ forecast_config.append({
     'lat_name': 'latitude',
     'lon_name': 'longitude',
     'forecast_time_func': None, #TODO
-    'created_time_func': None, #TODO
+    'creation_time_func': None, #TODO
     'sub_prev': False,
     'gzip': True,
     'user': '',
@@ -49,7 +46,7 @@ def access_vt_fc_urls():
         result.append(base_url + '{:>03}'.format(x) + '_surface.nc')
         #result.append(base_url + '{:>03}'.format(x) + '_surface.nc.dods')
     return result
-def access_vt_fc_created_time(dataset, forecast):
+def access_vt_fc_creation_time(dataset, forecast):
     """ Get the time the forecast was created, for the BOM ACCESS VT Rain Forecast configuration. """
     string_offset = len('http://opendap.bom.gov.au/thredds/dodsC/bmrc/access-vt-fc/ops/surface/')
     time_string = forecast['url'][string_offset:string_offset+10]
@@ -58,10 +55,10 @@ def access_vt_fc_created_time(dataset, forecast):
         month=int(time_string[4:6]),
         day=int(time_string[6:8]),
         hour=int(time_string[8:10]))
-def access_vt_fc_forecast_time(raw_time, created_time, dataset, detail):
+def access_vt_fc_forecast_time(raw_time, forecast, dataset, config):
     """ Get the time the forecast applies, for the BOM ACCESS VT Rain Forecast configuration. """
-    return created_time + datetime.timedelta(days=raw_time)
-forecast_config.append({
+    return forecast['creation_time'] + datetime.timedelta(days=raw_time)
+configs.append({
     'name': 'BOM ACCESS VT Rain',
     'method': 'opendap',
     'urls': [],
@@ -71,11 +68,6 @@ forecast_config.append({
     'lat_name': 'lat',
     'lon_name': 'lon',
     'forecast_time_func': access_vt_fc_forecast_time,
-    'created_time_func': access_vt_fc_created_time,
+    'creation_time_func': access_vt_fc_creation_time,
     'sub_prev': True
 })
-
-#
-# Observation
-#
-observation_config = []
