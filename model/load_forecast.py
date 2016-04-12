@@ -51,6 +51,8 @@ class ForecastLoader(object):
                         # Prepare to save the value.
                         session.add(fc_val)
                         j += 1
+                    # Try flushing the values into the DB to reduce ram usage.
+                    session.commit()
                     i += 1
 
 if __name__ == '__main__':
