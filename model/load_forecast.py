@@ -45,6 +45,15 @@ class ForecastLoader(object):
                     i += 1
 
 if __name__ == '__main__':
+    '''
+    Fetch forecasts and load them into the database.
+
+    Usage:
+    python -m model.load_forecast db_host db_port db_user db_password
+
+    Example:
+    python -m model.load_forecast 127.0.0.1 5432 myname mypassword
+    '''
     import sys
     from model.orm import ORM
     # Print usage if needed.

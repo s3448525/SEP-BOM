@@ -93,7 +93,7 @@ def fetch_opendap(config, fc_filter):
             time_index += 1
         # Close the opendap dataset.
         ds.close()
-        if len(forecasts) == 1:
+        if len(forecasts) == 1: #this is just here for debugging to limit the number of fetched forecasts, TODO remove this later.
             break
     # Return data.
     return forecasts
