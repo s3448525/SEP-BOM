@@ -3,6 +3,7 @@ from ftplib import FTP
 import gzip
 from netCDF4 import Dataset
 import datetime
+import sys
 
 
 def fetch_forecast(fc_filter={'name': [], 'after': None}):
@@ -19,6 +20,9 @@ def fetch_forecast(fc_filter={'name': [], 'after': None}):
     configs = forecast_config.configs
     print('Number of Forecast Configs: '+str(len(configs)))
     for config in configs:
+        # Skip if the name is not in the filter and the filter is active.
+        if len(fc_filter['name']) > 0 and (config['name'] not in fc_filter['name']):
+            continue
         # Call the url generator if one is present.
         if config['url_generator']:
             config['urls'] = config['url_generator']()
@@ -33,13 +37,11 @@ def fetch_forecast(fc_filter={'name': [], 'after': None}):
         post_process_forecasts(forecasts, config)
         # Yield each forecast.
         for forecast in forecasts:
-            # Yield.
             yield forecast
 
 
 def fetch_ftp(config, fc_filter):
-    return [] #abort because this functionis not ready for use.
-    for url in detail['urls']:
+    for url in config['urls']:
         # Access file via ftp.
         # TODO
         ftp = FTP(url, config['user'], config['passwd'])
@@ -91,20 +93,21 @@ def fetch_opendap(config, fc_filter):
             time_index += 1
         # Close the opendap dataset.
         ds.close()
-        break #just for debugging, remove this line
+        if len(forecasts) == 3:
+            break
     # Return data.
     return forecasts
 
 
 def post_process_forecasts(forecasts, config):
-    prev_values = None
+    prev_values = 0
     for fc in forecasts:
         # Interpret the time value.
 #        if config['time_type'] == 'UnixTime':
 #            forecast['time'] = Datetime.fromtimestamp(forecast['time'])
         # Optionally subtract previous values from the current values (usefull
         # for un-accumulating values).
-        if config['sub_prev'] and prev_values:
+        if config['sub_prev']:
             fc['values'] = fc['values'] - prev_values
         # Set prev_values for next time.
         prev_values = fc['values']
@@ -112,8 +115,11 @@ def post_process_forecasts(forecasts, config):
 
 def main():
     ''' Display details of fetched forecasts. '''
-    for fc in fetch_forecast():
-        print('### Forecast '+fc['name']+' ###')
+    # Take CLI arguments as filter names.
+    fc_filter = {'name':sys.argv[1:], 'after':None}
+    # Fetch and iterate the forecasts.
+    for fc in fetch_forecast(fc_filter):
+        print('### '+fc['name']+' ###')
         print('  Type: '+fc['type'])
         print('  Creation Time: '+str(fc['creation_time']))
         print('  Forecast Time: '+str(fc['time']))
