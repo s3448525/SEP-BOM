@@ -4,22 +4,22 @@ import datetime
 configs = []
 
 # BOM Official Rain Forecast
-configs.append({
-    'name': 'BOM Official Rain VIC',
-    'method': 'ftp',
-    'urls': ['ftp://ftp.bom.gov.au/adfd/IDV71097_VIC_WxPrecipitation_SFC.nc.gz'],
-    'url_generator':False,
-    'type': 'rain',
-    'grid_name': 'WxPrecipitation_SFC',
-    'lat_name': 'latitude',
-    'lon_name': 'longitude',
-    'forecast_time_func': None, #TODO
-    'creation_time_func': None, #TODO
-    'sub_prev': False,
-    'gzip': True,
-    'user': '',
-    'passwd': ''
-})
+#configs.append({
+#    'name': 'BOM Official Rain VIC',
+#    'method': 'ftp',
+#    'urls': ['ftp://ftp.bom.gov.au/adfd/IDV71097_VIC_WxPrecipitation_SFC.nc.gz'],
+#    'url_generator':False,
+#    'type': 'rain',
+#    'grid_name': 'WxPrecipitation_SFC',
+#    'lat_name': 'latitude',
+#    'lon_name': 'longitude',
+#    'forecast_time_func': None, #TODO
+#    'creation_time_func': None, #TODO
+#    'sub_prev': False,
+#    'gzip': True,
+#    'user': '',
+#    'passwd': ''
+#})
 
 
 # BOM ACCESS VT Rain Forecast

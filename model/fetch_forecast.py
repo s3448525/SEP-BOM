@@ -1,4 +1,4 @@
-import forecast_config
+import model.forecast_config
 from ftplib import FTP
 import gzip
 from netCDF4 import Dataset
@@ -17,7 +17,7 @@ def fetch_forecast(fc_filter={'name': [], 'after': None}):
     fc_filter['after'] is optionally a timestamp which specifies only
         forecasts made after this time will be fetched.
     '''
-    configs = forecast_config.configs
+    configs = model.forecast_config.configs
     print('Number of Forecast Configs: '+str(len(configs)))
     for config in configs:
         # Skip if the name is not in the filter and the filter is active.
@@ -82,8 +82,8 @@ def fetch_opendap(config, fc_filter):
                 'name': config['name'],
                 'url': url,
                 'type': config['type'],
-                'lat_list': ds.variables[config['lat_name']],
-                'lon_list': ds.variables[config['lon_name']],
+                'lat_list': ds.variables[config['lat_name']][:],
+                'lon_list': ds.variables[config['lon_name']][:],
                 'values': ds.variables[config['grid_name']][time_index,:,:]
             }
             forecast['creation_time'] = config['creation_time_func'](ds, forecast)
@@ -93,7 +93,7 @@ def fetch_opendap(config, fc_filter):
             time_index += 1
         # Close the opendap dataset.
         ds.close()
-        if len(forecasts) == 3:
+        if len(forecasts) == 1:
             break
     # Return data.
     return forecasts

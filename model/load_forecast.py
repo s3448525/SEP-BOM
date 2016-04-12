@@ -14,37 +14,44 @@ class ForecastLoader(object):
         Fetch forecasts and load them into the DB.
         '''
         # Fetch each forecast.
-        for raw_fc in fetch_forecast():
-            # Create the forecast description.
-            fc = Forecast(
-                name=raw_fc['name'],
-                creation_date=raw_fc['created_time'],
-                forecast_date=raw_fc['forecast_time'])
-            #TODO ensure the forecast description ID is ready for the ForecastValues to reference.
-            # Save the forecast description.
+        for raw_fc in model.fetch_forecast.fetch_forecast():
             with self.db.session_scope() as session:
-                session.add(Forecast)
-            with self.db.session_scope() as session:
+                # Create the forecast description.
+                fc = Forecast(
+                    name=raw_fc['name'],
+                    creation_date=raw_fc['creation_time'],
+                    forecast_date=raw_fc['time'])
+                #TODO ensure the forecast description ID is ready for the ForecastValues to reference.
+                # Save the forecast description.
+                session.add(fc)
                 session.commit()
-            # Convert the raw forecast values into objects.
-            i, j = 0
-            while i < len(raw_fc['lat_list']):
-                j = 0
-                while j < len(raw_fc['lon_list']):
-                    # Create forecast value object.
-                    fc_val = ForecastValue(
-                        id_forecast=fc.id,
-                        location=GISPoint(raw_fc['lon_list'][j], raw_fc['lat_list'][i]),
-                        value=raw_fc['values'][i][j])
-                    # Prepare to save the value.
-                    with self.db.session_scope() as session:
-                        session.add(ForecastValue)
-                    j += 1
-                # Save pending values.
-                with self.db.session_scope() as session:
-                    session.commit()
-                i += 1
+                # Convert the raw forecast values into objects.
+                i = 0
+                while i < len(raw_fc['lat_list']):
+                    j = 0
+                    while j < len(raw_fc['lon_list']):
+                        # Create forecast value object.
+                        # Note: Values from the lat/lon_list and values arrays
+                        # are cast to type float from numpy.float32/64 so that
+                        # other modules such as sqlalchemy/psycopg2 know how
+                        # handle them.
+                        fc_val = ForecastValue(
+                            id_forecast=fc.id,
+                            location=GISPoint(float(raw_fc['lon_list'][j]), float(raw_fc['lat_list'][i])),
+                            value=float(raw_fc['values'][i][j]))
+                        # Prepare to save the value.
+                        session.add(fc_val)
+                        j += 1
+                    i += 1
 
 if __name__ == '__main__':
-    fc_loader = ForecastLoader(TODO_get_DB) #TODO
+    import sys
+    from model.orm import ORM
+    # Print usage if needed.
+    if len(sys.argv) != 5:
+        sys.exit('Usage: python -m model.load_forecast host port username password')
+    # Connect to the db.
+    db = ORM(sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.argv[4])
+    # Load the forecasts.
+    fc_loader = ForecastLoader(db)
     fc_loader.load()
