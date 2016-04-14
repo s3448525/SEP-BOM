@@ -1,3 +1,48 @@
+'''
+Common Configuration Fields
+
+name:
+    A short descriptive string that identifies the forecast.
+method:
+    Method for fetching the forecast. Supported methods: 'opendap' and 'ftp'.
+urls:
+    A list of zero or more URLs that defines where the forecast(s) are
+    fetched from.
+url_generator:
+    Optionally a function that outputs a list of URLs. The returned list
+    will replace the config 'urls'. Set to None to disable.
+type:
+    The type of forecast, eg 'rain'.
+grid_name:
+    The NetCDF dataset variable name that holds the forecast values,
+    eg 'precipitation'.
+lat_name:
+    The NetCDF dataset dimension name that holds the latitude values,
+    eg 'lat'.
+lon_name:
+    The NetCDF dataset dimension name that holds the longitude values,
+    eg 'lon'.
+lat_step:
+    The step size along the latitude dimension used when copying forecast
+    values. Can be used to reduce the amount of forecast data. Eg a step size
+    of 1 copies every element along the latitude dimension, a step size of 2
+    copies every other, a step size of 3 copies every third, etc.
+lon_step:
+    The step size along the longitude dimension used when copying forecast
+    values. Can be used to reduce the amount of forecast data. Eg a step size
+    of 1 copies every element along the longitude dimension, a step size of 2
+    copies every other, a step size of 3 copies every third, etc.
+forecast_time_func:
+    Optionally a function that returns a datetime object that specifies the
+    time the forecast applies. Set to None to disable.
+creation_time_func:
+    Optionally a function that returns a datetime object that specifies the
+    time the forecast was created. Set to None to disable.
+sub_prev:
+    When set to True; forecast values will be substracted by the previously
+    fetched forecast values. Can be used to un-accumulate a series of
+    forecasts. Set to False to disable.
+'''
 import datetime
 
 
@@ -8,11 +53,13 @@ configs = []
 #    'name': 'BOM Official Rain VIC',
 #    'method': 'ftp',
 #    'urls': ['ftp://ftp.bom.gov.au/adfd/IDV71097_VIC_WxPrecipitation_SFC.nc.gz'],
-#    'url_generator':False,
+#    'url_generator': None,
 #    'type': 'rain',
 #    'grid_name': 'WxPrecipitation_SFC',
 #    'lat_name': 'latitude',
 #    'lon_name': 'longitude',
+#    'lat_step': 1,
+#    'lon_step': 1,
 #    'forecast_time_func': None, #TODO
 #    'creation_time_func': None, #TODO
 #    'sub_prev': False,
@@ -24,7 +71,7 @@ configs = []
 
 # BOM ACCESS VT Rain Forecast
 def access_vt_fc_urls():
-    """ URL generator for the BOM ACCESS VT Rain Forecast configuration. """
+    ''' URL generator for the BOM ACCESS VT Rain Forecast configuration. '''
     # Naively presume the url path (alternatively we could have looked up the
     # catalog).
     # Start generating the url.
@@ -47,7 +94,7 @@ def access_vt_fc_urls():
         #result.append(base_url + '{:>03}'.format(x) + '_surface.nc.dods')
     return result
 def access_vt_fc_creation_time(dataset, forecast):
-    """ Get the time the forecast was created, for the BOM ACCESS VT Rain Forecast configuration. """
+    ''' Get the time the forecast was created, for the BOM ACCESS VT Rain Forecast configuration. '''
     string_offset = len('http://opendap.bom.gov.au/thredds/dodsC/bmrc/access-vt-fc/ops/surface/')
     time_string = forecast['url'][string_offset:string_offset+10]
     return datetime.datetime(
@@ -56,7 +103,7 @@ def access_vt_fc_creation_time(dataset, forecast):
         day=int(time_string[6:8]),
         hour=int(time_string[8:10]))
 def access_vt_fc_forecast_time(raw_time, forecast, dataset, config):
-    """ Get the time the forecast applies, for the BOM ACCESS VT Rain Forecast configuration. """
+    ''' Get the time the forecast applies, for the BOM ACCESS VT Rain Forecast configuration. '''
     return forecast['creation_time'] + datetime.timedelta(days=raw_time)
 configs.append({
     'name': 'BOM ACCESS VT Rain',
@@ -67,6 +114,8 @@ configs.append({
     'grid_name': 'accum_prcp',
     'lat_name': 'lat',
     'lon_name': 'lon',
+    'lat_step': 2,
+    'lon_step': 2,
     'forecast_time_func': access_vt_fc_forecast_time,
     'creation_time_func': access_vt_fc_creation_time,
     'sub_prev': True

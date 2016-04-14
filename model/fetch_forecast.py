@@ -24,7 +24,7 @@ def fetch_forecast(fc_filter={'name': [], 'after': None}):
         if len(fc_filter['name']) > 0 and (config['name'] not in fc_filter['name']):
             continue
         # Call the url generator if one is present.
-        if config['url_generator']:
+        if config['url_generator'] is not None:
             config['urls'] = config['url_generator']()
         # Fetch forecast(s) via the specified method.
         if config['method'] == 'ftp':
@@ -82,9 +82,9 @@ def fetch_opendap(config, fc_filter):
                 'name': config['name'],
                 'url': url,
                 'type': config['type'],
-                'lat_list': ds.variables[config['lat_name']][:],
-                'lon_list': ds.variables[config['lon_name']][:],
-                'values': ds.variables[config['grid_name']][time_index,:,:]
+                'lat_list': ds.variables[config['lat_name']][::config['lat_step']],
+                'lon_list': ds.variables[config['lon_name']][::config['lon_step']],
+                'values': ds.variables[config['grid_name']][time_index, ::config['lat_step'], ::config['lon_step']]
             }
             forecast['creation_time'] = config['creation_time_func'](ds, forecast)
             forecast['time'] = config['forecast_time_func'](
@@ -116,13 +116,18 @@ def post_process_forecasts(forecasts, config):
 def main():
     ''' Display details of fetched forecasts. '''
     # Take CLI arguments as filter names.
-    fc_filter = {'name':sys.argv[1:], 'after':None}
+    fc_filter = {'name': sys.argv[1:], 'after': None}
     # Fetch and iterate the forecasts.
     for fc in fetch_forecast(fc_filter):
         print('### '+fc['name']+' ###')
         print('  Type: '+fc['type'])
         print('  Creation Time: '+str(fc['creation_time']))
         print('  Forecast Time: '+str(fc['time']))
+        print('  Grid Size: {}, {}'.format(len(fc['lat_list']), len(fc['lon_list'])))
+        print('  Latitudes Sample:')
+        print(fc['lat_list'][:5])
+        print('  Longitudes Sample:')
+        print(fc['lon_list'][:5])
         print('  Values:')
         print(fc['values'])
 
