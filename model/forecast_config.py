@@ -1,6 +1,10 @@
 '''
-Common Configuration Fields
+Configuration for controlling what and how forecasts are fetched.
 
+The variable 'configs' is a list of configurations. Each configuration in the
+list describes a forecast.
+
+Common Configuration Fields
 name:
     A short descriptive string that identifies the forecast.
 method:
@@ -24,14 +28,16 @@ lon_name:
     eg 'lon'.
 lat_step:
     The step size along the latitude dimension used when copying forecast
-    values. Can be used to reduce the amount of forecast data. Eg a step size
-    of 1 copies every element along the latitude dimension, a step size of 2
-    copies every other, a step size of 3 copies every third, etc.
+    values. A data reduction feature to aid performance at the cost of spatial
+    resolution. Eg a step size of 1 copies every element along the latitude
+    dimension (no reduction), a step size of 2 copies every other, a step
+    size of 3 copies every third, etc.
 lon_step:
     The step size along the longitude dimension used when copying forecast
-    values. Can be used to reduce the amount of forecast data. Eg a step size
-    of 1 copies every element along the longitude dimension, a step size of 2
-    copies every other, a step size of 3 copies every third, etc.
+    values. A data reduction feature to aid performance at the cost of spatial
+    resolution. Eg a step size of 1 copies every element along the longitude
+    dimension (no reduction), a step size of 2 copies every other, a step
+    size of 3 copies every third, etc.
 forecast_time_func:
     Optionally a function that returns a datetime object that specifies the
     time the forecast applies. Set to None to disable.
