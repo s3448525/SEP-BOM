@@ -45,13 +45,14 @@ class ForecastValue(Base):
     forecast = relationship(Forecast)
 
 
-class RainfallObservation(Base):
+class Observation(Base):
     """
-    Stores rainfall observation data
+    Stores observation data
     """
-    __tablename__ = 'tbl_rainfall_observations'
+    __tablename__ = 'tbl_observations'
 
     time = Column(DateTime, index=True)
     location = Column(Geography(geometry_type='POINT', srid=4326, spatial_index=True))
+    weather_type = Column(String(16), index=True)
     value = Column(DECIMAL(10,4))
     source = Column(String(128))
