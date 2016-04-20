@@ -1,5 +1,6 @@
 # coding: utf-8
 from sqlalchemy import Column, Integer, String, DECIMAL, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import TSRANGE
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geography
@@ -28,7 +29,7 @@ class Forecast(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(128))
     creation_date = Column(DateTime)
-    forecast_date = Column(DateTime)
+    date_range = Column(TSRANGE)
 
 
 class ForecastValue(Base):
@@ -42,7 +43,7 @@ class ForecastValue(Base):
     location = Column(Geography(geometry_type='POINT', srid=4326, spatial_index=True))
     value = Column(DECIMAL(10,4))
 
-    forecast = relationship(Forecast)
+    forecast = relationship(Forecast, lazy='joined')
 
 
 class RainfallObservation(Base):
@@ -51,7 +52,7 @@ class RainfallObservation(Base):
     """
     __tablename__ = 'tbl_rainfall_observations'
 
-    time = Column(DateTime, index=True)
-    location = Column(Geography(geometry_type='POINT', srid=4326, spatial_index=True))
+    time = Column(DateTime, index=True, primary_key=True)
+    location = Column(Geography(geometry_type='POINT', srid=4326, spatial_index=True), primary_key=True)
     value = Column(DECIMAL(10,4))
     source = Column(String(128))
