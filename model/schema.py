@@ -51,8 +51,9 @@ class Observation(Base):
     """
     __tablename__ = 'tbl_observations'
 
-    time = Column(DateTime, primary_key=True)
-    location = Column(Geography(geometry_type='POINT', srid=4326, spatial_index=True), primary_key=True)
-    weather_type = Column(String(16), primary_key=True)
+    id = Column(Integer, primary_key=True)
+    time = Column(DateTime, index=True)
+    location = Column(Geography(geometry_type='POINT', srid=4326, spatial_index=True))
+    weather_type = Column(String(16), index=True)
     value = Column(DECIMAL(10,4))
     source = Column(String(128))
