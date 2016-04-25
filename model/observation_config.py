@@ -1,5 +1,5 @@
 from model.helpers.distance import GISPoint
-from model.schema import Observation
+from model.schema import RainfallObservation
 import urllib.request
 import urllib.parse
 import datetime
@@ -41,10 +41,9 @@ def wow_scraper():
     # Create Observation objects
     for obs in data['r']:
         if 'drr' in obs['Primary']:
-            yield Observation(
+            yield RainfallObservation(
                 time=ob_time,
                 location=GISPoint(float(obs['mlo']), float(obs['mla'])),
-                weather_type='rain',
                 value=obs['Primary']['drr'],
                 source='WOW')
 configs.append({
