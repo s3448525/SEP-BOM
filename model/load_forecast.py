@@ -7,10 +7,12 @@ python -m model.load_forecast db_host db_port db_user db_password
 Example:
 python -m model.load_forecast 127.0.0.1 5432 myname mypassword
 '''
-from model.helpers.distance import GISPoint
+from model.helpers.distance import GISPoint, Distance, Within, AsLatLon, decode_point
 import model.fetch_forecast
 from model.schema import Forecast
 from model.schema import ForecastValue
+from psycopg2.extras import DateTimeRange
+import datetime
 
 
 class ForecastLoader(object):
@@ -29,7 +31,8 @@ class ForecastLoader(object):
                 fc = Forecast(
                     name=raw_fc['name'],
                     creation_date=raw_fc['creation_time'],
-                    forecast_date=raw_fc['time'])
+                    date_range=DateTimeRange(raw_fc['time'], raw_fc['time']+datetime.timedelta(days=1)))  # TODO: set up the date_range
+
                 #TODO ensure the forecast description ID is ready for the ForecastValues to reference.
                 # Save the forecast description.
                 session.add(fc)
@@ -55,14 +58,40 @@ class ForecastLoader(object):
                     session.commit()
                     i += 1
 
+    def forecasts_near(self, longitude, latitude, forecast_date=None, distance=1000, limit=5):
+        """
+        :param longitude:
+        :param latitude:
+        :param distance: The distance (in meters) of the bounds
+        :param limit: How many records to return (sorted by distance)
+        :return: A list of locations (as a dict) near a given coordinate.
+        """
+        if forecast_date is None:
+            forecast_date = datetime.datetime.utcnow()
+
+        point = GISPoint(longitude, latitude)
+        forecasts = []
+        with self.db.session_scope() as session:
+            results = session.query(AsLatLon(ForecastValue.location), Forecast.name)\
+                .filter(Within(ForecastValue.location, point, distance),
+                        Forecast.date_range.contains(forecast_date))\
+                .order_by(Distance(ForecastValue.location, point)).limit(limit)\
+                .all()
+
+            for result in results:
+                longitude, latitude = decode_point(str(result[0]))
+                forecasts.append(dict(Name=result[1], Latitude=latitude, Longitude=longitude))
+
+        return forecasts
+
 if __name__ == '__main__':
-    import sys
-    from model.orm import ORM
-    # Print usage if needed.
-    if len(sys.argv) != 5:
-        sys.exit('Usage: python -m model.load_forecast host port username password')
     # Connect to the db.
-    db = ORM(sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.argv[4])
+    from feva import db
+
     # Load the forecasts.
     fc_loader = ForecastLoader(db)
+
     fc_loader.load()
+
+    # example
+    print(fc_loader.forecasts_near(150.9519958, -45.8919983))

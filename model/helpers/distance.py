@@ -1,5 +1,6 @@
 from geoalchemy2.elements import WKTElement
 from geoalchemy2 import func
+import re
 
 
 class _GISPoint(object):
@@ -27,6 +28,19 @@ class _Distance(object):
     def __call__(self, source, dest):
         return func.ST_Distance(source, dest)
 
+
+class _AsLatLon(object):
+
+    def __call__(self, point):
+        return func.ST_AsText(point)
+
 Within = _Within()
 GISPoint = _GISPoint()
 Distance = _Distance()
+AsLatLon = _AsLatLon()
+
+point_regex = re.compile(r'POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)')
+
+
+def decode_point(point):
+    return point_regex.findall(point)[0]
