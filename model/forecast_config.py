@@ -93,9 +93,9 @@ def access_vt_fc_urls():
     # Put the date/time components into the url.
     base_url += forecast_time + '/ACCESS-VT_' + forecast_time + '_'
     result = []
-    # Generate 36 complete URLs with suffixes from 1 to 36, because the
+    # Generate 37 complete URLs with suffixes from 0 to 36, because the
     # forecast is split across multiple files.
-    for x in range(1, 37):
+    for x in range(0, 37):
         result.append(base_url + '{:>03}'.format(x) + '_surface.nc')
         #result.append(base_url + '{:>03}'.format(x) + '_surface.nc.dods')
     return result
@@ -103,14 +103,19 @@ def access_vt_fc_creation_time(dataset, forecast):
     ''' Get the time the forecast was created, for the BOM ACCESS VT Rain Forecast configuration. '''
     string_offset = len('http://opendap.bom.gov.au/thredds/dodsC/bmrc/access-vt-fc/ops/surface/')
     time_string = forecast['url'][string_offset:string_offset+10]
-    return datetime.datetime(
+    creation_time = datetime.datetime(
         year=int(time_string[:4]),
         month=int(time_string[4:6]),
         day=int(time_string[6:8]),
         hour=int(time_string[8:10]))
+    # Convert to UTC timezone.
+    creation_time += datetime.timedelta(hours=3) #TODO check the adjustment amount is correct.
+    return creation_time
 def access_vt_fc_forecast_time(raw_time, forecast, dataset, config):
     ''' Get the time the forecast applies, for the BOM ACCESS VT Rain Forecast configuration. '''
-    return forecast['creation_time'] + datetime.timedelta(days=raw_time)
+    start_time = forecast['creation_time'] + datetime.timedelta(days=raw_time)
+    end_time = start_time + datetime.timedelta(hours=1)
+    return (start_time, end_time)
 configs.append({
     'name': 'BOM ACCESS VT Rain',
     'method': 'opendap',

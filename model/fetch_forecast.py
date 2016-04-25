@@ -87,7 +87,7 @@ def fetch_opendap(config, fc_filter):
                 'values': ds.variables[config['grid_name']][time_index, ::config['lat_step'], ::config['lon_step']]
             }
             forecast['creation_time'] = config['creation_time_func'](ds, forecast)
-            forecast['time'] = config['forecast_time_func'](
+            forecast['start_time'], forecast['end_time'] = config['forecast_time_func'](
                 ds.variables['time'][time_index], forecast, ds, config)
             forecasts.append(forecast)
             time_index += 1
@@ -122,7 +122,7 @@ def main():
         print('### '+fc['name']+' ###')
         print('  Type: '+fc['type'])
         print('  Creation Time: '+str(fc['creation_time']))
-        print('  Forecast Time: '+str(fc['time']))
+        print('  Forecast Time: {} - {}'.format(str(fc['start_time']), str(fc['end_time'])))
         print('  Grid Size: {}, {}'.format(len(fc['lat_list']), len(fc['lon_list'])))
         print('  Latitudes Sample:')
         print(fc['lat_list'][:5])

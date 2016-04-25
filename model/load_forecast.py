@@ -31,8 +31,7 @@ class ForecastLoader(object):
                 fc = Forecast(
                     name=raw_fc['name'],
                     creation_date=raw_fc['creation_time'],
-                    date_range=DateTimeRange(raw_fc['time'], raw_fc['time']+datetime.timedelta(days=1)))  # TODO: set up the date_range
-
+                    date_range=DateTimeRange(raw_fc['start_time'], raw_fc['end_time']))
                 #TODO ensure the forecast description ID is ready for the ForecastValues to reference.
                 # Save the forecast description.
                 session.add(fc)
