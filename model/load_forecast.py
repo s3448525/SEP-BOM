@@ -3,9 +3,7 @@ Fetch forecasts and load them into the database.
 
 Can be used as a script.
 Usage:
-python -m model.load_forecast db_host db_port db_user db_password
-Example:
-python -m model.load_forecast 127.0.0.1 5432 myname mypassword
+python -m model.load_forecast
 '''
 from model.helpers.distance import GISPoint, Distance, Within, AsLatLon, decode_point
 import model.fetch_forecast
