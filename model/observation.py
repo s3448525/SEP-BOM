@@ -1,3 +1,8 @@
+from model.helpers.distance import GISPoint, Distance, Within, AsLatLon, decode_point
+from model.fetch_observation import fetch_observation
+from model.schema import RainfallObservation
+from psycopg2.extras import DateTimeRange
+import datetime
 
 class ObservationManager(object):
 
@@ -5,10 +10,70 @@ class ObservationManager(object):
         self.db = db
 
     def api_get_observations_near(self, params):
-        return self.get_observations_near(None, None, None)
+        return self.get_observations_near(None, None)
 
-    def get_observations_near(self, longitude, latitude, time, weather_type='rain', max_distance=1000, limit=10):
-        return None
+    def get_observations_near(self, longitude, latitude, start_time=None, end_time=None, max_distance=1000, limit=10):
+        """
+        :param longitude:
+        :param latitude:
+        :param start_time:
+        :param end_time:
+        :param distance: The distance (in meters) of the bounds
+        :param limit: How many records to return (sorted by distance)
+        :return: A list of observations near a given coordinate.
+        """
+        # If no start time is specified use the current time.
+        if start_time is None:
+            start_time = datetime.datetime.utcnow() - datetime.timedelta(hours=2)
+            end_time = start_time + datetime.timedelta(hours=4)
+        # Query the DB for observations.
+        point = GISPoint(longitude, latitude)
+        observations = []
+        with self.db.session_scope() as session:
+            observations = session.query(RainfallObservation)\
+                .filter(Within(RainfallObservation.location, point, max_distance))\
+                .filter(RainfallObservation.time > start_time)\
+                .filter(RainfallObservation.time <= end_time)\
+                .order_by(Distance(RainfallObservation.location, point))\
+                .limit(limit)\
+                .all()
+        return observations
 
     def add_observation(self, latitude, longitude, time, value, source):
         pass
+
+    def load(self):
+        '''
+        Fetch observations and load them into the DB.
+        '''
+        # Fetch each observation.
+        obs_count = 0
+        with self.db.session_scope() as session:
+            for obs in fetch_observation():
+                # Skip adding if object already exists.
+                if session.query(RainfallObservation.time)\
+                        .filter(RainfallObservation.time == obs.time)\
+                        .filter(RainfallObservation.location == obs.location)\
+                        .one_or_none() is not None:
+                    continue
+                session.add(obs)
+                obs_count += 1
+                # Commit to the DB in batches for improved speed.
+                if obs_count % 1000 == 0:
+                    session.commit()
+            # Commit remaining uncommitted observations.
+            session.commit()
+        return obs_count
+
+if __name__ == '__main__':
+    # Connect to the db.
+    from feva import db
+    # Load the observations.
+    obs_manager = ObservationManager(db)
+    obs_count = obs_manager.load()
+    print('Observations loaded: '+str(obs_count))
+
+    #import logging
+    #logging.basicConfig()
+    #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    print(obs_manager.get_observations_near(144.963279, -37.814107, max_distance=50000))
