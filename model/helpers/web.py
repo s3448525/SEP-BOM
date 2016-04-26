@@ -7,6 +7,10 @@ import flask
 from model.helpers.validator import MultipleInvalid
 
 
+class GeneralException(Exception):
+    pass
+
+
 def get_db():
     import feva
     db = getattr(flask.g, 'db', None)
@@ -55,6 +59,9 @@ def api_json_method(f):
             for error in e.errors:
                 errors.append('%s: %s' % (error.msg, error.path[-1]))
             result = dict(success=False, errors=errors, message='Validation Error')
+
+        except GeneralException as e:
+            result = dict(success=False, message=str(e))
 
         except Exception as e:
             result = dict(success=False, message="An unexpected error occurred: %s" % e)
