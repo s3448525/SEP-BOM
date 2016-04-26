@@ -1,9 +1,13 @@
 import model.forecast_config
+from urllib.parse import urlparse
 from ftplib import FTP
 import gzip
 from netCDF4 import Dataset
 import datetime
 import sys
+import os
+from io import BytesIO
+import tempfile
 
 
 def fetch_forecast(fc_filter={'name': [], 'after': None}):
@@ -41,31 +45,70 @@ def fetch_forecast(fc_filter={'name': [], 'after': None}):
 
 
 def fetch_ftp(config, fc_filter):
+    forecasts = []
     for url in config['urls']:
         # Access file via ftp.
-        # TODO
-        ftp = FTP(url, config['user'], config['passwd'])
-        ftp.login()
-        tp.cwd('dirpath')
-        # Skip file if it has not been modified recently.
-        if fc_filter['after']:
-            mod_time = string.replace(ftp.sendcmd('MDTM filename'), '213 ', '')
-            if datetime.strptime(mod_time, '%Y%m%d%%H%M%S') <= fc_filter['after']:
-                return None
+        url_parts = urlparse(url)
+        data_dir = os.path.dirname(url_parts.path)[1:]
+        data_name = os.path.basename(url_parts.path)
+        print('Fetching {} ({} {})'.format(url, data_dir, data_name))
+        ftp = FTP(url_parts.hostname, config['user'], config['passwd'])
+        ftp.login(user=config['user'], passwd=config['passwd'])
+        ftp.cwd(data_dir)
+#        # Skip file if it has not been modified recently.
+#        if fc_filter['after']:
+#            mod_time = string.replace(ftp.sendcmd('MDTM filename'), '213 ', '')
+#            print('mod_time: {}'.format(str(mod_time)))
+#            if datetime.strptime(mod_time, '%Y%m%d%%H%M%S') <= fc_filter['after']:
+#                return None
         # Download the file.
-        # TODO
-        ftp.retrbinary('RETR filename', callback)
+        raw_data = BytesIO()
+        ftp.retrbinary('RETR '+data_name, raw_data.write)
         ftp.quit()
-        # Uncompress file.
+        temp_file = tempfile.NamedTemporaryFile(mode='w+b', prefix='feva_', delete=False)
+        temp_file_name = temp_file.name
+        print('temp file: {}'.format(temp_file_name))
+        # Write to a temp file.
         if(config['gzip']):
-            # TODO
-            data = gzip.decompress(data)
-        # Read data from file.
-        # TODO
-        # Remove file.
-        # TODO
-        # Return data.
-        # TODO
+            # Decompress and write to file.
+            print('Un-gzipping & writing')
+            temp_file.write(gzip.decompress(raw_data.getvalue()))
+        else:
+            # Otherwise just write to file.
+            print('Writing')
+            temp_file.write(raw_data.getvalue())
+        raw_data.close()
+        temp_file.close()
+        # Open the dataset.
+        print('Opening dataset')
+        ds = Dataset(temp_file_name, mode='r')
+        # Create a forecast for each time index.
+        time_index = 0
+        while time_index < len(ds.variables[config['grid_name']]):
+            # Create the forecast structure.
+            forecast = {
+                'name': config['name'],
+                'url': url,
+                'type': config['type'],
+                'lat_list': ds.variables[config['lat_name']][::config['lat_step']],
+                'lon_list': ds.variables[config['lon_name']][::config['lon_step']],
+                'values': ds.variables[config['grid_name']][time_index, ::config['lat_step'], ::config['lon_step']]
+            }
+            forecast['creation_time'] = config['creation_time_func'](ds, forecast)
+            forecast['start_time'], forecast['end_time'] = config['forecast_time_func'](
+                ds.variables['time'][time_index], forecast, ds, config)
+            forecasts.append(forecast)
+            time_index += 1
+            break #this is just here for debugging to limit the number of fetched forecasts, TODO remove this later.
+        # Close the dataset.
+        ds.close()
+        # Remove the temp file.
+        print('Deleteing: {}'.format(temp_file_name))
+        os.remove(temp_file_name)
+        if len(forecasts) == 1: #this is just here for debugging to limit the number of fetched forecasts, TODO remove this later.
+            break
+    # Return data.
+    return forecasts
 
 
 def fetch_opendap(config, fc_filter):
@@ -91,6 +134,7 @@ def fetch_opendap(config, fc_filter):
                 ds.variables['time'][time_index], forecast, ds, config)
             forecasts.append(forecast)
             time_index += 1
+            break #this is just here for debugging to limit the number of fetched forecasts, TODO remove this later.
         # Close the opendap dataset.
         ds.close()
         if len(forecasts) == 1: #this is just here for debugging to limit the number of fetched forecasts, TODO remove this later.

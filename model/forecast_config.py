@@ -54,25 +54,31 @@ import datetime
 
 configs = []
 
-# BOM Official Rain Forecast
-#configs.append({
-#    'name': 'BOM Official Rain VIC',
-#    'method': 'ftp',
-#    'urls': ['ftp://ftp.bom.gov.au/adfd/IDV71097_VIC_WxPrecipitation_SFC.nc.gz'],
-#    'url_generator': None,
-#    'type': 'rain',
-#    'grid_name': 'WxPrecipitation_SFC',
-#    'lat_name': 'latitude',
-#    'lon_name': 'longitude',
-#    'lat_step': 1,
-#    'lon_step': 1,
-#    'forecast_time_func': None, #TODO
-#    'creation_time_func': None, #TODO
-#    'sub_prev': False,
-#    'gzip': True,
-#    'user': '',
-#    'passwd': ''
-#})
+# BOM Official Rain Forecast IDV71097
+def adfd_creation_time(dataset, forecast):
+    return datetime.datetime.utcfromtimestamp(dataset.getncattr('creationTime'))
+def adfd_forecast_time(raw_time, forecast, dataset, config):
+    start_time = datetime.datetime.utcfromtimestamp(raw_time)
+    end_time = start_time + datetime.timedelta(hours=3)
+    return (start_time, end_time)
+configs.append({
+    'name': 'BOM Official Rain VIC',
+    'method': 'ftp',
+    'urls': ['ftp://ftp.bom.gov.au/adfd/IDV71097_VIC_WxPrecipitation_SFC.nc.gz'],
+    'url_generator': None,
+    'type': 'rain',
+    'grid_name': 'WxPrecipitation_SFC',
+    'lat_name': 'latitude',
+    'lon_name': 'longitude',
+    'lat_step': 2,
+    'lon_step': 2,
+    'forecast_time_func': adfd_forecast_time,
+    'creation_time_func': adfd_creation_time,
+    'sub_prev': False,
+    'gzip': True,
+    'user': '',
+    'passwd': ''
+})
 
 
 # BOM ACCESS VT Rain Forecast
