@@ -58,6 +58,10 @@ body {
   height: 30px;
 }
 
+#data-table tr td:nth-child(1) {
+  padding-left: 15px;
+}
+
 #data-table tr:nth-child(odd) {
   background: rgba(0, 0, 0, .25);
 }
@@ -81,3 +85,20 @@ body {
   background: rgba(0, 0, 0, .5);
   color: rgba(0, 0, 0, 1);
 }
+
+.search-bar-label {
+  color: #FFF;
+  font-weight: lighter;
+}
+
+input[type="text"], select[id="select_data_type"], button[id="button_search"] {
+  width: 150px;
+  padding: 0px;
+  border: none;
+  border-bottom: solid 1px #252525;
+  font-size: 12px;
+}
+
+button[id="button_search"] {
+  width: 50px;
+} 

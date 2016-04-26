@@ -29,6 +29,7 @@
 	<div class="row" id="search-bar-wrapper">
 		<!-- This row should contain a search bar -->
 		<div class="col-md-12" >
+			<!-- <label class="search-bar-label">Weather Type:</label> -->
 			<select id="select_data_type">
 				<!-- Types of forecast/observation data to be displayed -->
 				<option value="rainfall">Rainfall</option>
@@ -38,8 +39,11 @@
 				<option value="cloud">Cloud</option>
 				<option value="humidity">Humidity</option>
 			</select>
-			<input type="text" name="input_location" placeholder="Melbourne, AU">
-			<button id="button_search" onclick="search()">SEARCH</button>
+			<span> </span>
+			<!-- <label class="search-bar-label">Location:</label> -->
+			<input type="text" name="input_location" placeholder="Melbourne, AU" >
+			<button id="button_search" onclick="search()">Search</span></button>
+			
 			<!-- Search button action script -->
 			<script type=text/javascript>
 				$(function search() {
