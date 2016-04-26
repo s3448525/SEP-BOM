@@ -1,85 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1.0">
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="initial-scale=1.0">
+	<!-- jQuery -->
+	<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
 	<script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-    <!-- Bootstrap. Change to min for production -->
-    <link rel="stylesheet" href="/static/css/bootstrap.css" />
-    <link rel="stylesheet" href="/static/css/bootstrap-theme.css" />
-    <!-- Override bootstrap with custom css -->
-    <link rel="stylesheet" href="/static/css/feva.css" />
-    <!-- Site title & etc. -->
-    <title>Feva</title>
+	<!-- Bootstrap. Change to min for production -->
+	<link rel="stylesheet" href="/static/css/bootstrap.css" />
+	<link rel="stylesheet" href="/static/css/bootstrap-theme.css" />
+	<!-- Override bootstrap with custom css -->
+	<link rel="stylesheet" href="/static/css/feva.css" />
+	<!-- Site title & etc. -->
+	<title>Feva</title>
 </head>
+
 <body>
-<div class="container">
+<div class="container" id="main-container">
 	<!-- Main container -->
-    <div class="row" id="heading-wrapper">
-    	<!-- This row should contain the heading and perhaps a navigation bar -->
-        <div class="col-md-12">
-            <h1>Feva - Weather Forcast Accuracy</h1>
-        </div>
-    </div>
+	<div class="row" id="header-wrapper">
+		<!-- This row should contain the heading and perhaps a navigation bar -->
+		<div class="col-md-12">
+			<h3>Feva - Weather Forcast Accuracy</h3>
+		</div>
+	</div>
 
-    <div class="row" id="search-bar-wrapper">
-    	<!-- This row should contain a search bar -->
-    	<div class="col-md-12" >
-    		<input type="text"></input>
-    		<button>SEARCH</button>
-    	</div>
-    </div>
+	<div class="row" id="search-bar-wrapper">
+		<!-- This row should contain a search bar -->
+		<div class="col-md-12" >
+			<select id="select_data_type">
+				<!-- Types of forecast/observation data to be displayed -->
+				<option value="rainfall">Rainfall</option>
+				<option value="temperature">Temperature</option>
+				<option value="wind_speed">Wind Speed</option>
+				<option value="wind_direction">Wind Direction</option>
+				<option value="cloud">Cloud</option>
+				<option value="humidity">Humidity</option>
+			</select>
+			<input type="text" name="input_location" placeholder="Melbourne, AU">
+			<button id="button_search" onclick="search()">SEARCH</button>
+			<!-- Search button action script -->
+			<script type=text/javascript>
+				$(function search() {
+					$('button#button_search').bind('click', function() {
+						var e = document.getElementById("select_data_type");
+						alert("Location: " + $('input[name="input_location"]').val() + "\n" +
+							  "Type:" + e.options[e.selectedIndex].value);
+						// TODO: send search request
+						// $.getJSON($SCRIPT_ROOT + '/_search', {
+						// 	// type: e.options[e.selectedIndex].value;
+						// 	location: $('input[name="input_location"]').val()
+						// }, function(data) {
+						// 	// TODO: display returned data
+						// }),
+						// return false;
+					});
+				});
+			</script>
+		</div>
+	</div>
 
-    <div class="row" id="main-content-wrapper">
- 	   	<!-- This is where main content goes, a giant table of data and an interactive map -->
-        <div class="col-md-6">
-        	<!-- A giant table -->
-        	<span class="debug-span">table</span>
-        	<table style="width: 100%;">
-        		<!--title row-->
-        		<tr style="font-weight: bold;">
-        			<td>Location</td>
-        			<td>Forecast</td>
-        			<td>Observation</td>
-        		</tr>
-        		<!--content row(s)-->
+	<div class="row" id="main-content-wrapper">
+		<!-- This is where main content goes, a giant table of data and an interactive map -->
+		<div class="col-md-5" id="data-table-wrapper">
+			<!-- A giant table -->
+			<table style="width: 100%;" id="data-table">
+				<!--title row-->
+				<tr style="font-weight: bold;" id="data-table-title-row">
+					<td>Date</td>
+					<td>Forecast</td>
+					<td>Observation</td>
+					<td>Δ</td>
+				</tr>
+				<!--content row(s)-->
 				<tr>
-        			<td>Melbourne</td>
-        			<td>25C</td>
-        			<td>20C</td>
-        		</tr>
-        	</table>
-        </div>
-        <div class="col-md-6">
-        	<span class="debug-span">map</span>
-        	<!-- An interactive map -->
-        	<div id="map"></div>
-        	<!-- Configure map script -->
-		    <script>
-		      var map;
-		      function initMap() {
-		        map = new google.maps.Map(document.getElementById('map'), {
-		          center: {lat: -37.8095, lng: 144.964},
-		          zoom: 8
-		        });
-		      }
-		    </script>
+					<td>Today</td>
+					<td>25C</td>
+					<td>20C</td>
+					<td>-5C</td>
+				</tr>
+				<tr>
+					<td>-1 day</td>
+					<td>-</td>
+					<td>-</td>
+					<td>-</td>
+				</tr>
+				<tr>
+					<td>-2 days</td>
+					<td>-</td>
+					<td>-</td>
+					<td>-</td>
+				</tr>
+				<tr>
+					<td>-3 days</td>
+					<td>-</td>
+					<td>-</td>
+					<td>-</td>
+				</tr>
+				<tr>
+					<td>-4 days</td>
+					<td>-</td>
+					<td>-</td>
+					<td>-</td>
+				</tr>
+				<tr>
+					<td>-5 days</td>
+					<td>-</td>
+					<td>-</td>
+					<td>-</td>
+				</tr>
+				<tr>
+					<td>-6 days</td>
+					<td>-</td>
+					<td>-</td>
+					<td>-</td>
+				</tr>
+				<tr>
+					<td>-7 days</td>
+					<td>-</td>
+					<td>-</td>
+					<td>-</td>
+				</tr>
+			</table>
+		</div>
+		<div class="col-md-7" id="map-wrapper">
+			<!-- An interactive map -->
+			<div id="map"></div>
+			<!-- Configure map script -->
+			<script>
+				var map;
+				function initMap() {
+					map = new google.maps.Map(document.getElementById('map'), {
+						center: {lat: -37.8095, lng: 144.964},
+						zoom: 7
+					});
+				}
+			</script>
 			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&callback=initMap"
 				async defer></script>
-        </div>
-    </div>
+		</div>
+	</div>
 
-    <div class="row" id="footer-wrapper">
-    	<!-- Footer here -->
-    	<div class="col-md-12" id="footer">
-    		<span class="debug-span">this is a footer with some copyright and crap</span>
-    	</div>
-    </div>
-    <!-- End of main container -->
+	<div class="row" id="footer-wrapper">
+		<!-- Footer here -->
+		<div class="col-md-12" id="footer">
+			<span id="">Copyright 2016, Feva Project Team, All rights reserved.</span>
+		</div>
+	</div>
+	<!-- End of main container -->
 </div>
 </body>
+
 <!-- bootstrap -->
 <script src="/static/js/bootstrap.js"></script>
+<!-- Flask -->
+<script type=text/javascript>
+  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
 </html>

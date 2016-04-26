@@ -1,47 +1,83 @@
-.container {
-  /** THIS IS FOR DEBUGGING ONLY, REMOVE OR OVERRIDE AT RELEASE **/
-  background:
-    radial-gradient(circle at 0% 50%, rgba(96, 16, 48, 0) 9px, #613 10px, rgba(96, 16, 48, 0) 11px) 0px 10px,
-    radial-gradient(at 100% 100%,     rgba(96, 16, 48, 0) 9px, #613 10px, rgba(96, 16, 48, 0) 11px),
-    #8a3;
-  background-size: 20px 20px;
-}
 
-.row {
-  /** THIS IS FOR DEBUGGING ONLY, REMOVE OR OVERRIDE AT RELEASE **/
-  background-color: rgba(255, 55, 125, 0.5);
-}
+/*  */
 
-.col-md-12 {
-  /** THIS IS FOR DEBUGGING ONLY, REMOVE OR OVERRIDE AT RELEASE **/
-  background: rgba(0, 0, 77, 0.35);
-}
-
-.col-md-6 {
-  /** THIS IS FOR DEBUGGING ONLY, REMOVE OR OVERRIDE AT RELEASE **/
-  background: rgba(63, 127, 191, 0.75);
-}
-
-.debug-span {
-  font-weight: bold;
-  font-size: 9px;
-}
-
-.container {
+body {
   width: 100vw;
   height: 100vh;
-  min-height: 600px;
+  position: absolute;
+  background: rgba(0, 0, 0, .9);
+  font-family: "Helvatica Neue", Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+#main-container {
+  width: 100%;
+  height: 100%;
+  bottom: 0;
+  position:absolute;
+  background: rgba(200, 200, 200, .8);
+}
+
+#header-wrapper {
+  height: 60px;
+  background: rgba(0, 0, 0, .1);
+}
+
+#search-bar-wrapper {
+  height: 30px;
+  background: rgba(0, 0, 0, .5);
+  padding-top: 2px;
+}
+
+#main-content-wrapper {
+  height: 80%;
+  top: 0px;
+  bottom: 0px;
+  position: relative;
+  background: rgba(255, 0, 0, .5);
+}
+
+#map-wrapper, #data-table-wrapper {
+  padding: 0;
+  margin: 0;
+}
+
+#data-table {
+  background: rgba(0, 0, 0, .3);
+  color: rgba(255, 255, 255, 1);
+  padding: 5px;
+}
+
+#data-table #data-table-title-row {
+  background: rgba(0, 0, 0, .75);
+}
+
+#data-table tr {
+  height: 30px;
+}
+
+#data-table tr:nth-child(odd) {
+  background: rgba(0, 0, 0, .25);
+}
+
+#map-wrapper {
+  height: 100%;
+  background: rgba(0,0,0,1);
 }
 
 #map {
-  min-height:800px;
-  width:100%;
+  min-height: 300px;
+  height: 100%;
+  width: 100%;
 }
 
 #footer {
   min-height: 20px;
   position: fixed;
-  width: 100%;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  background: rgba(0, 0, 0, .5);
+  color: rgba(0, 0, 0, 1);
 }
