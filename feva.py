@@ -14,6 +14,11 @@ app.config.from_pyfile('feva.cfg')
 # start the db connection
 db = ORM(app.config['DB_HOST'], app.config['DB_PORT'], app.config['DB_USERNAME'], app.config['DB_PASSWORD'])
 
+# Close the DB session at the end of each request.
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db.shutdown_session()
+
 # register the endpoints
 app.register_blueprint(ui_bp)
 app.register_blueprint(api_data_bp)

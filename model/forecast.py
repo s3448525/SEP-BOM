@@ -18,7 +18,7 @@ class ForecastManager(object):
         '''
         # Fetch each forecast.
         for raw_fc in model.fetch_forecast.fetch_forecast():
-            with self.db.session_scope() as session:
+            with self.db.transaction_session() as session:
                 # Create the forecast description.
                 fc = Forecast(
                     name=raw_fc['name'],
@@ -64,16 +64,14 @@ class ForecastManager(object):
             forecast_date = datetime.datetime.utcnow()
 
         point = GISPoint(longitude, latitude)
+        results = self.db.session.query(ForecastValue, Forecast)\
+            .filter(Within(ForecastValue.location, point, max_distance),
+                    Forecast.date_range.contains(forecast_date))\
+            .filter(ForecastValue.id_forecast == Forecast.id)\
+            .order_by(Distance(ForecastValue.location, point))\
+            .limit(limit)\
+            .all()
         forecasts = []
-        with self.db.session_scope() as session:
-            results = session.query(AsLatLon(ForecastValue.location), Forecast.name)\
-                .filter(Within(ForecastValue.location, point, max_distance),
-                        Forecast.date_range.contains(forecast_date))\
-                .order_by(Distance(ForecastValue.location, point)).limit(limit)\
-                .all()
-
-            for result in results:
-                longitude, latitude = decode_point(str(result[0]))
-                forecasts.append(dict(Name=result[1], Latitude=latitude, Longitude=longitude))
-
+        for result in results:
+            forecasts.append((result[0], result[1]))
         return forecasts

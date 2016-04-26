@@ -12,7 +12,7 @@ class ObservationManager(object):
     def api_get_observations_near(self, params):
         return self.get_observations_near(None, None)
 
-    def get_observations_near(self, longitude, latitude, start_time=None, end_time=None, max_distance=1000, limit=10):
+    def get_observations_near(self, longitude, latitude, start_time=None, end_time=None, weather_type='rain', max_distance=1000, limit=10):
         """
         :param longitude:
         :param latitude:
@@ -28,15 +28,13 @@ class ObservationManager(object):
             end_time = start_time + datetime.timedelta(hours=4)
         # Query the DB for observations.
         point = GISPoint(longitude, latitude)
-        observations = []
-        with self.db.session_scope() as session:
-            observations = session.query(RainfallObservation)\
-                .filter(Within(RainfallObservation.location, point, max_distance))\
-                .filter(RainfallObservation.time > start_time)\
-                .filter(RainfallObservation.time <= end_time)\
-                .order_by(Distance(RainfallObservation.location, point))\
-                .limit(limit)\
-                .all()
+        observations = self.db.session.query(RainfallObservation)\
+            .filter(Within(RainfallObservation.location, point, max_distance))\
+            .filter(RainfallObservation.time > start_time)\
+            .filter(RainfallObservation.time <= end_time)\
+            .order_by(Distance(RainfallObservation.location, point))\
+            .limit(limit)\
+            .all()
         return observations
 
     def add_observation(self, latitude, longitude, time, value, source):
@@ -48,7 +46,7 @@ class ObservationManager(object):
         '''
         # Fetch each observation.
         obs_count = 0
-        with self.db.session_scope() as session:
+        with self.db.transaction_session() as session:
             for obs in fetch_observation():
                 # Skip adding if object already exists.
                 if session.query(RainfallObservation.time)\
