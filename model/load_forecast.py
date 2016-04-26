@@ -11,6 +11,7 @@ from model.schema import Forecast
 from model.schema import ForecastValue
 from psycopg2.extras import DateTimeRange
 import datetime
+from math import isnan
 
 
 class ForecastLoader(object):
@@ -39,17 +40,20 @@ class ForecastLoader(object):
                 while i < len(raw_fc['lat_list']):
                     j = 0
                     while j < len(raw_fc['lon_list']):
-                        # Create forecast value object.
-                        # Note: Values from the lat/lon_list and values arrays
-                        # are cast to type float from numpy.float32/64 so that
-                        # other modules such as sqlalchemy/psycopg2 know how
-                        # handle them.
-                        fc_val = ForecastValue(
-                            id_forecast=fc.id,
-                            location=GISPoint(float(raw_fc['lon_list'][j]), float(raw_fc['lat_list'][i])),
-                            value=float(raw_fc['values'][i][j]))
-                        # Prepare to save the value.
-                        session.add(fc_val)
+                        # Skip NaN values.
+                        # TODO make detecting Nan/numpy-masked-values faster.
+                        if not isnan(raw_fc['values'][i][j]):
+                            # Create forecast value object.
+                            # Note: Values from the lat/lon_list and values arrays
+                            # are cast to type float from numpy.float32/64 so that
+                            # other modules such as sqlalchemy/psycopg2 know how
+                            # handle them.
+                            fc_val = ForecastValue(
+                                id_forecast=fc.id,
+                                location=GISPoint(float(raw_fc['lon_list'][j]), float(raw_fc['lat_list'][i])),
+                                value=float(raw_fc['values'][i][j]))
+                            # Prepare to save the value.
+                            session.add(fc_val)
                         j += 1
                     # Try flushing the values into the DB to reduce ram usage.
                     session.commit()
