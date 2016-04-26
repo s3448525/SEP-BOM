@@ -1,7 +1,7 @@
 import datetime
 from model.observation import ObservationManager
 from model.helpers.web import GeneralException
-from model.load_forecast import ForecastLoader
+from model.forecast import ForecastManager
 
 
 class Evaluator(object):
@@ -12,7 +12,11 @@ class Evaluator(object):
     def __init__(self, db):
         self.db = db
 
-    def evaluate_lat_lon(self, longitude, latitude, time=datetime.datetime.utcnow(), max_distance=1000,  weather_type='rain', obs_source='wow', forecast_source='BOM'):
+    def api_evaluate_lat_lon(self, params):
+        #TODO validate params
+        return self.evaluate_lat_lon(params['longitude,'], params['latitude,'])
+
+    def evaluate_lat_lon(self, longitude, latitude, time=datetime.datetime.utcnow(), max_distance=3000,  weather_type='rain', obs_source='wow', forecast_source='BOM'):
         """
         Find the closest station to the lat/lon at the given time, and compare it to the closest observation
         :param latitude:
@@ -25,34 +29,34 @@ class Evaluator(object):
         :return: the forecast, the observation and the evaluation
         """
         observation_manager = ObservationManager(self.db)
-        forecast_manager = ForecastLoader(self.db)
-
-        # find the closest observation
-        observation = observation_manager.get_observations_near(longitude, latitude, time, weather_type, max_distance=max_distance, limit=1)
-        if observation is None:
-            raise GeneralException("No observation found.")
+        forecast_manager = ForecastManager(self.db)
 
         # find the closest forecast
         # TODO: modify the below call to return a forecast object rather than a dict
-        forecast = forecast_manager.forecasts_near(longitude, latitude, time, distance=max_distance, limit=1)
+        forecast_value, forecast = forecast_manager.get_forecasts_near(longitude, latitude, time, max_distance=max_distance, limit=1)[0]
         if not forecast:
             raise GeneralException("No forecast found.")
+        print(forecast_value, forecast)
+        # find the closest observation
+        observation = observation_manager.get_observations_near(longitude, latitude, forecast.date_range.lower, forecast.date_range.upper, weather_type, max_distance=max_distance, limit=1)
+        if observation is None:
+            raise GeneralException("No observation found.")
 
         # return the result
-        return dict(forecast=forecast, observation=observation, evaluation=self.evaluate(forecast, observation))
+        return dict(forecast=forecast, observation=observation, evaluation=self.evaluate(forecast_value, observation))
 
-    def evaluate(self, forecast, observation):
+    def evaluate(self, forecast_value, observation):
         """
         Function to actually do the comparison
         :param forecast: The forecast object (ORM)
         :param observation: The observation object (ORM)
         :return: True or False
         """
-        if forecast.value >= self.RAINFALL_THRESHOLD and observation.value > 0:
+        if forecast_value.value >= self.RAINFALL_THRESHOLD and observation.value > 0:
             # predicted rain and was raining
             return True
 
-        elif forecast.value < self.RAINFALL_THRESHOLD and observation == 0:
+        elif forecast_value.value < self.RAINFALL_THRESHOLD and observation == 0:
             # didn't predict rain and wasn't raining
             return True
         else:

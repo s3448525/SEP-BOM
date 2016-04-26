@@ -3,6 +3,7 @@ from flask import Blueprint
 import model.helpers.web as web
 from model.location import LocationManager
 from model.observation import ObservationManager
+from model.evaluator import Evaluator
 
 api_data_bp = Blueprint('data', 'data', url_prefix='/api')
 
@@ -36,4 +37,5 @@ def evaluate_forecast():
     Evaluate a forecast
     :return:
     """
-    return dict()
+    evaluator = Evaluator(web.get_db())
+    return evaluator.api_evaluate_lat_lon(web.get_parameters())
