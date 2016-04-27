@@ -111,11 +111,11 @@
 						streetViewControl: false,
 						zoomControl: false,
 					});
-					getLocation();
+					getUserLocation();
 					addMarkers(map);
 				}
 				// Get user's location
-				function getLocation() {
+				function getUserLocation() {
 					if (navigator.geolocation) {
 						navigator.geolocation.getCurrentPosition(showPosition);
 					} else {
@@ -128,13 +128,23 @@
 					var lng = position.coords.longitude;
 					map.setCenter(new google.maps.LatLng(lat, lng));
 				}
-				var locations = [];
+				var locations = [
+					["Melbourne", -37.8095, 144.964]
+				];
 				// Load all forecast/observation location points into an array and load to map
 				function addMarkers(map) {
 					for (var i = 0; i < locations.length; i++) {
 						var loc = locations[i];
+						// var icon = {
+						// 	url: "../static/images/weather-radar-512.png",
+						// 	size: new google.maps.Size(31, 71),
+						// 	origin: new google.maps.Point(0, 0),
+						// 	anchor: new google.maps.Point(17, 34),
+						// 	scaledSize: new google.maps.Size(11, 25)
+						// };
 						var marker = new google.maps.Marker({
 							position: {lat: loc[1], lng: loc[2]},
+							// icon: icon,
 							map: map,
 							title: loc[0],
 						});
