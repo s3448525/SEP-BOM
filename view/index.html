@@ -7,6 +7,7 @@
 	<!-- jQuery -->
 	<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
 	<script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<!-- Bootstrap. Change to min for production -->
 	<link rel="stylesheet" href="/static/css/bootstrap.css" />
 	<link rel="stylesheet" href="/static/css/bootstrap-theme.css" />
@@ -27,9 +28,9 @@
 	</div>
 
 	<div class="row" id="search-bar-wrapper">
-		<!-- This row should contain a search bar -->
-		<div class="col-md-12" >
-			<!-- <label class="search-bar-label">Weather Type:</label> -->
+		<div class="col-md-12" id="search-components-wrapper">
+			<!-- Display city name here -->
+			<span id="current-city-label"></span>
 			<select id="select_data_type">
 				<!-- Types of forecast/observation data to be displayed -->
 				<option value="rainfall">Rainfall</option>
@@ -41,8 +42,8 @@
 			</select>
 			<span> </span>
 			<!-- <label class="search-bar-label">Location:</label> -->
-			<input type="text" name="input_location" placeholder="Melbourne, AU" >
-			<button id="button_search" onclick="search()">Search</span></button>
+			<input type="text" name="input_location" id="pac-input" placeholder="Melbourne, AU" >
+			<button id="button_search" onclick="">Search</span></button>
 			
 			<!-- Search button action script -->
 			<script type=text/javascript>
@@ -50,15 +51,23 @@
 					$('button#button_search').bind('click', function() {
 						var e = document.getElementById("select_data_type");
 						alert("Location: " + $('input[name="input_location"]').val() + "\n" +
-							  "Type:" + e.options[e.selectedIndex].value);
+							  "Type: " + e.options[e.selectedIndex].value + "\n");
 						// TODO: send search request
 						// $.getJSON($SCRIPT_ROOT + '/_search', {
-						// 	// type: e.options[e.selectedIndex].value;
+						// 	type: e.options[e.selectedIndex].value;
 						// 	location: $('input[name="input_location"]').val()
-						// }, function(data) {
-						// 	// TODO: display returned data
-						// }),
-						// return false;
+						// }, 
+						for (i = 1; i <= 8; i++) { 
+							// TODO: display returned data
+							document.getElementById("data-table-content-row-"+i).innerHTML = "\
+								<td>dd/mm/yy "+i+"</td>\
+								<td>forecast_data "+i+"</td>\
+								<td>observation_data "+i+"</td>\
+								<td>diff "+i+"</td>\
+							";
+						}
+						// Add Google map marker?
+						return false;
 					});
 				});
 			</script>
@@ -78,54 +87,14 @@
 					<td>Δ</td>
 				</tr>
 				<!--content row(s)-->
-				<tr>
-					<td>Today</td>
-					<td>25C</td>
-					<td>20C</td>
-					<td>-5C</td>
-				</tr>
-				<tr>
-					<td>-1 day</td>
-					<td>-</td>
-					<td>-</td>
-					<td>-</td>
-				</tr>
-				<tr>
-					<td>-2 days</td>
-					<td>-</td>
-					<td>-</td>
-					<td>-</td>
-				</tr>
-				<tr>
-					<td>-3 days</td>
-					<td>-</td>
-					<td>-</td>
-					<td>-</td>
-				</tr>
-				<tr>
-					<td>-4 days</td>
-					<td>-</td>
-					<td>-</td>
-					<td>-</td>
-				</tr>
-				<tr>
-					<td>-5 days</td>
-					<td>-</td>
-					<td>-</td>
-					<td>-</td>
-				</tr>
-				<tr>
-					<td>-6 days</td>
-					<td>-</td>
-					<td>-</td>
-					<td>-</td>
-				</tr>
-				<tr>
-					<td>-7 days</td>
-					<td>-</td>
-					<td>-</td>
-					<td>-</td>
-				</tr>
+				<tr id="data-table-content-row-1"></tr>
+				<tr id="data-table-content-row-2"></tr>
+				<tr id="data-table-content-row-3"></tr>
+				<tr id="data-table-content-row-4"></tr>
+				<tr id="data-table-content-row-5"></tr>
+				<tr id="data-table-content-row-6"></tr>
+				<tr id="data-table-content-row-7"></tr>
+				<tr id="data-table-content-row-8"></tr>
 			</table>
 		</div>
 		<div class="col-md-7" id="map-wrapper">
@@ -134,18 +103,45 @@
 			<!-- Configure map script -->
 			<script>
 				var map;
+				// Google maps initialiser
 				function initMap() {
 					map = new google.maps.Map(document.getElementById('map'), {
-						center: {lat: -37.8095, lng: 144.964},
-						zoom: 7,
+						zoom: 12,
 						mapTypeControlOptions: { mapTypeIds: [] },
 						streetViewControl: false,
 						zoomControl: false,
 					});
+					getLocation();
+					addMarkers(map);
+				}
+				// Get user's location
+				function getLocation() {
+					if (navigator.geolocation) {
+						navigator.geolocation.getCurrentPosition(showPosition);
+					} else {
+						alert("Geolocation is not supported by this browser.");
+					}
+				}
+				// Focus map to user's location
+				function showPosition(position) {
+					var lat = position.coords.latitude;
+					var lng = position.coords.longitude;
+					map.setCenter(new google.maps.LatLng(lat, lng));
+				}
+				var locations = [];
+				// Load all forecast/observation location points into an array and load to map
+				function addMarkers(map) {
+					for (var i = 0; i < locations.length; i++) {
+						var loc = locations[i];
+						var marker = new google.maps.Marker({
+							position: {lat: loc[1], lng: loc[2]},
+							map: map,
+							title: loc[0],
+						});
+					}
 				}
 			</script>
-			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&callback=initMap"
-				async defer></script>
+			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&callback=initMap" async defer></script>
 		</div>
 	</div>
 
@@ -163,7 +159,7 @@
 <script src="/static/js/bootstrap.js"></script>
 <!-- Flask -->
 <script type=text/javascript>
-  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+	var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 </script>
 
 </html>
