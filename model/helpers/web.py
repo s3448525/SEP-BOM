@@ -25,7 +25,7 @@ def get_post_data():
 
 
 def get_parameters():
-    return flask.request.args
+    return dict(flask.request.args.items())
 
 
 class JsonEncoder(json.JSONEncoder):

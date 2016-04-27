@@ -2,10 +2,15 @@ import datetime
 from model.observation import ObservationManager
 from model.helpers.web import GeneralException
 from model.forecast import ForecastManager
+from model.helpers import validator
 
 
 class Evaluator(object):
 
+    EVALUATE_SCHEMA = {
+        validator.Required('longitude'): validator.Longitude(),
+        validator.Required('latitude'): validator.Latitude()
+    }
     # The probability of rainfall which gives the 'Umbrella' icon
     RAINFALL_THRESHOLD = 20
 
@@ -13,8 +18,8 @@ class Evaluator(object):
         self.db = db
 
     def api_evaluate_lat_lon(self, params):
-        #TODO validate params
-        return self.evaluate_lat_lon(params['longitude,'], params['latitude,'])
+        params = validator.validate(self.EVALUATE_SCHEMA, params)
+        return self.evaluate_lat_lon(params['longitude'], params['latitude'])
 
     def evaluate_lat_lon(self, longitude, latitude, time=datetime.datetime.utcnow(), max_distance=3000,  weather_type='rain', obs_source='wow', forecast_source='BOM'):
         """
