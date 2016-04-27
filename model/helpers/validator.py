@@ -7,6 +7,18 @@ def validate(schema, data, **kwargs):
     return Schema(schema)(data, **kwargs)
 
 
+def Datetime(msg=None, format='%Y-%m-%dT%H:%M:%S.%fZ'):
+
+    @wraps(Datetime)
+    def f(v):
+        try:
+            return datetime.datetime.strptime(v, format)
+        except:
+            raise DatetimeInvalid(msg or 'value does not match expected format %s' % format)
+
+    return f
+
+
 def Decimal(msg=None):
 
     @wraps(Decimal)
