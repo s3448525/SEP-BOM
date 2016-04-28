@@ -7,4 +7,4 @@ if __name__ == '__main__':
     from feva import db
 
     eva = Evaluator(db)
-    print(eva.evaluate_lat_lon(144.9643, -37.8099, time=datetime.datetime.utcnow(), max_distance=3000))
+    print(eva.evaluate_lat_lon(144.9643, -37.8099, time=datetime.datetime.utcnow(), max_distance=10000))
