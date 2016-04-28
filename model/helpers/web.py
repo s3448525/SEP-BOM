@@ -5,6 +5,7 @@ import json
 import flask
 
 from model.helpers.validator import MultipleInvalid
+import model.schema
 
 
 class GeneralException(Exception):
@@ -36,6 +37,8 @@ class JsonEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, datetime.datetime):
             return o.isoformat()
+        if isinstance(o, model.schema.Forecast) or isinstance(o, model.schema.ForecastValue) or isinstance(o, model.schema.RainfallObservation):
+            return o.toJson()
         return json.JSONEncoder.default(self, o)
 
 

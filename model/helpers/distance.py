@@ -1,6 +1,8 @@
 from geoalchemy2.elements import WKTElement
 from geoalchemy2 import func
 import re
+import struct
+from binascii import unhexlify
 
 
 class _GISPoint(object):
@@ -44,3 +46,7 @@ point_regex = re.compile(r'POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)')
 
 def decode_point(point):
     return point_regex.findall(point)[0]
+
+def unpack_wkb_point(wkb_point):
+    coords = struct.unpack_from('dd', unhexlify(str(wkb_point)), 5)
+    return (coords[1], coords[0])
