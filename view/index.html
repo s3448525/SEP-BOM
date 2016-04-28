@@ -31,7 +31,7 @@
 		<div class="col-md-12" id="search-components-wrapper">
 			<!-- Display city name here -->
 			<span id="current-city-label"></span>
-			<select id="select_data_type">
+			<select id="select-data-type">
 				<!-- Types of forecast/observation data to be displayed -->
 				<option value="rainfall">Rainfall</option>
 				<option value="temperature">Temperature</option>
@@ -42,14 +42,15 @@
 			</select>
 			<span> </span>
 			<!-- <label class="search-bar-label">Location:</label> -->
-			<input type="text" name="input_location" id="pac-input" placeholder="Melbourne, AU" >
-			<button id="button_search" onclick="">Search</span></button>
+			<input type="text" name="input_location" id="search-box" placeholder="Melbourne, AU" >
+			<button id="button-search" onclick="">Search</span></button>
 			
 			<!-- Search button action script -->
 			<script type=text/javascript>
 				$(function search() {
-					$('button#button_search').bind('click', function() {
-						var e = document.getElementById("select_data_type");
+					// Feva API call to retrieve JSON object
+					$('button#button-search').bind('click', function() {
+						var e = document.getElementById("select-data-type");
 						alert("Location: " + $('input[name="input_location"]').val() + "\n" +
 							  "Type: " + e.options[e.selectedIndex].value + "\n");
 						// TODO: send search request
@@ -66,9 +67,9 @@
 								<td>diff "+i+"</td>\
 							";
 						}
-						// Add Google map marker?
-						return false;
+						// return false;
 					});
+					// Add Google map marker?
 				});
 			</script>
 		</div>
@@ -102,7 +103,7 @@
 			<div id="map"></div>
 			<!-- Configure map script -->
 			<script>
-				var map;
+				var map, searchBox, geocoder;
 				// Google maps initialiser
 				function initMap() {
 					map = new google.maps.Map(document.getElementById('map'), {
@@ -111,7 +112,69 @@
 						streetViewControl: false,
 						zoomControl: false,
 					});
+					searchBox = new google.maps.places.SearchBox(document.getElementById('search-box'));
+					// google.maps.event.addListener(searchBox, 'places_changed', processPlacesSearch);
+
+					//input associated with the searchBox
+					google.maps.event.trigger( searchBox, 'focus');
+					google.maps.event.trigger( searchBox, 'keydown', {keyCode:13});
+
+					// Create the search box and link it to the UI element.
+					var input = document.getElementById('search-box');
+					var searchBox = new google.maps.places.SearchBox(input);
+
+					// Bias the SearchBox results towards current map's viewport.
+					map.addListener('bounds_changed', function() {
+						searchBox.setBounds(map.getBounds());
+					});
+
+					var markers = [];
+					// Listen for the event fired when the user selects a prediction and retrieve
+					// more details for that place.
+					searchBox.addListener('places_changed', function() {
+						var places = searchBox.getPlaces();
+
+						if (places.length == 0) {
+							return;
+						}
+
+						// Clear out the old markers.
+						markers.forEach(function(marker) {
+							marker.setMap(null);
+						});
+						markers = [];
+
+						// For each place, get the icon, name and location.
+						var bounds = new google.maps.LatLngBounds();
+						places.forEach(function(place) {
+							var icon = {
+								url: place.icon,
+								size: new google.maps.Size(71, 71),
+								origin: new google.maps.Point(0, 0),
+								anchor: new google.maps.Point(17, 34),
+								scaledSize: new google.maps.Size(25, 25)
+							};
+
+							// Create a marker for each place.
+							markers.push(new google.maps.Marker({
+								map: map,
+								icon: icon,
+								title: place.name,
+								position: place.geometry.location
+							}));
+
+							if (place.geometry.viewport) {
+								// Only geocodes have viewport.
+								bounds.union(place.geometry.viewport);
+							} else {
+								bounds.extend(place.geometry.location);
+							}
+						});
+						map.fitBounds(bounds);
+					});
+
 					getUserLocation();
+					
 					addMarkers(map);
 				}
 				// Get user's location
@@ -151,7 +214,7 @@
 					}
 				}
 			</script>
-			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&callback=initMap" async defer></script>
+			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&libraries=places&callback=initMap" async defer></script>
 		</div>
 	</div>
 

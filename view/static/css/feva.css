@@ -98,7 +98,7 @@ body {
   font-weight: lighter;
 }
 
-input[type="text"], select[id="select_data_type"], button[id="button_search"] {
+input[type="text"], select[id="select-data-type"], button[id="button-search"] {
   width: 150px;
   padding: 0px;
   border: none;
@@ -106,6 +106,6 @@ input[type="text"], select[id="select_data_type"], button[id="button_search"] {
   font-size: 12px;
 }
 
-button[id="button_search"] {
+button[id="button-search"] {
   width: 50px;
 } 
