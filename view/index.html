@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="initial-scale=1.0">
+	<!-- jQuery -->
+	<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+	<script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<!-- Bootstrap. Change to min for production -->
+	<link rel="stylesheet" href="/static/css/bootstrap.css" />
+	<link rel="stylesheet" href="/static/css/bootstrap-theme.css" />
+	<!-- Override bootstrap with custom css -->
+	<link rel="stylesheet" href="/static/css/feva.css" />
+	<!-- Site title & etc. -->
+	<title>Feva</title>
+</head>
+
+<body>
+<div class="container" id="main-container">
+	<!-- Main container -->
+	<div class="row" id="header-wrapper">
+		<!-- This row should contain the heading and perhaps a navigation bar -->
+		<div class="col-md-12">
+			<h3 style="font-weight: bold;">Feva - Weather Forcast Accuracy</h3>
+		</div>
+	</div>
+
+	<div class="row" id="search-bar-wrapper">
+		<div class="col-md-12" id="search-components-wrapper">
+			<!-- Display city name here -->
+			<span id="current-city-label"></span>
+			<select id="select-data-type">
+				<!-- Types of forecast/observation data to be displayed -->
+				<option value="rain">Rainfall</option>
+				<option value="temperature">Temperature</option>
+				<option value="wind_speed">Wind Speed</option>
+				<option value="wind_direction">Wind Direction</option>
+				<option value="cloud">Cloud</option>
+				<option value="humidity">Humidity</option>
+			</select>
+			<span> </span>
+			<!-- <label class="search-bar-label">Location:</label> -->
+			<input type="text" name="input_location" id="search-box" placeholder="Search for place">
+			<input type="text" name="input_location_coord" id="location-coord-box" value="">
+			<button id="button-search" onclick="search()">Search</span></button>
+			
+			<!-- Search button action script -->
+			<script type=text/javascript>
+				function search() {
+					// Feva API call to retrieve JSON object
+					var e = document.getElementById("select-data-type");
+					var data_type = e.options[e.selectedIndex].value;
+					var lat = $('input[name="input_location_coord"]').val().split(",")[0];
+					var lon = $('input[name="input_location_coord"]').val().split(",")[1];
+					// alert() is only for debug 
+					alert("Latitude: " + lat + "\n" +
+						  "Longitude: " + lon + "\n" +
+						  "Type: " + data_type + "\n");
+					// TODO: send search request
+					// $.getJSON($SCRIPT_ROOT + 'api/evaluate', {
+					// 	type: e.options[e.selectedIndex].value;
+					//  latitude: lat;
+					//  longitude: lon;
+					// }, 
+					for (i = 1; i <= 8; i++) { 
+						// TODO: display returned data
+						document.getElementById("data-table-content-row-"+i).innerHTML = "\
+							<td>dd/mm/yy "+i+"</td>\
+							<td>forecast_data "+i+"</td>\
+							<td>observation_data "+i+"</td>\
+							<td>diff "+i+"</td>\
+						";
+					}
+					// Add Google map marker?
+				}
+			</script>
+		</div>
+	</div>
+
+	<div class="row" id="main-content-wrapper">
+		<!-- This is where main content goes, a giant table of data and an interactive map -->
+		<div class="col-md-5" id="data-table-wrapper">
+			<!-- A giant table -->
+			<table style="width: 100%;" id="data-table">
+				<!--title row-->
+				<tr style="font-weight: bold;" id="data-table-title-row">
+					<td>Date</td>
+					<td>Forecast</td>
+					<td>Observation</td>
+					<td>Δ</td>
+				</tr>
+				<!--content row(s)-->
+				<tr id="data-table-content-row-1"></tr>
+				<tr id="data-table-content-row-2"></tr>
+				<tr id="data-table-content-row-3"></tr>
+				<tr id="data-table-content-row-4"></tr>
+				<tr id="data-table-content-row-5"></tr>
+				<tr id="data-table-content-row-6"></tr>
+				<tr id="data-table-content-row-7"></tr>
+				<tr id="data-table-content-row-8"></tr>
+			</table>
+		</div>
+		<div class="col-md-7" id="map-wrapper">
+			<!-- An interactive map -->
+			<div id="map"></div>
+			<!-- Configure map script -->
+			<script>
+				var map, searchBox, geocoder;
+				// Google maps initialiser
+				function initMap() {
+					map = new google.maps.Map(document.getElementById('map'), {
+						zoom: 12,
+						mapTypeControlOptions: { mapTypeIds: [] },
+						streetViewControl: false,
+						zoomControl: false,
+					});
+					searchBox = new google.maps.places.SearchBox(document.getElementById('search-box'));
+
+					// Create the search box and link it to the UI element.
+					var input = document.getElementById('search-box');
+					var searchBox = new google.maps.places.SearchBox(input);
+
+					// Bias the SearchBox results towards current map's viewport.
+					map.addListener('bounds_changed', function() {
+						searchBox.setBounds(map.getBounds());
+					});
+
+					var markers = [];
+					// Listen for the event fired when the user selects a prediction and retrieve
+					// more details for that place.
+					searchBox.addListener('places_changed', function() {
+						var places = searchBox.getPlaces();
+
+						if (places.length == 0) {
+							return;
+						}
+
+						// Save location coordinates for later use
+						document.getElementById('location-coord-box').value = 
+							places[0].geometry.location.lat() + "," + places[0].geometry.location.lng();
+
+						// Clear out the old markers.
+						markers.forEach(function(marker) {
+							marker.setMap(null);
+						});
+						markers = [];
+
+						// For each place, get the icon, name and location.
+						var bounds = new google.maps.LatLngBounds();
+						places.forEach(function(place) {
+							// Create a marker for each place.
+							markers.push(new google.maps.Marker({
+								map: map,
+								title: place.name,
+								position: place.geometry.location
+							}));
+
+							if (place.geometry.viewport) {
+								// Only geocodes have viewport.
+								bounds.union(place.geometry.viewport);
+							} else {
+								bounds.extend(place.geometry.location);
+							}
+						});
+						map.fitBounds(bounds);
+						search();
+					});
+					// Focus to users location
+					getUserLocation();
+					// Display observation points
+					addMarkers(map);
+				}
+				// Get user's location
+				function getUserLocation() {
+					if (navigator.geolocation) {
+						navigator.geolocation.getCurrentPosition(showPosition);
+					} else {
+						alert("Geolocation is not supported by this browser.");
+					}
+				}
+				// Focus map to user's location
+				function showPosition(position) {
+					var lat = position.coords.latitude;
+					var lng = position.coords.longitude;
+					map.setCenter(new google.maps.LatLng(lat, lng));
+				}
+				var locations = [];
+				// Load all forecast/observation location points into an array and load to map
+				function addMarkers(map) {
+					for (var i = 0; i < locations.length; i++) {
+						var loc = locations[i];
+						// var icon = {
+						// 	url: "../static/images/weather-radar-512.png",
+						// 	size: new google.maps.Size(31, 71),
+						// 	origin: new google.maps.Point(0, 0),
+						// 	anchor: new google.maps.Point(17, 34),
+						// 	scaledSize: new google.maps.Size(11, 25)
+						// };
+						var marker = new google.maps.Marker({
+							position: {lat: loc[1], lng: loc[2]},
+							// icon: icon,
+							map: map,
+							title: loc[0],
+						});
+					}
+				}
+			</script>
+			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&libraries=places&callback=initMap" async defer></script>
+		</div>
+	</div>
+
+	<div class="row" id="footer-wrapper">
+		<!-- Footer here -->
+		<div class="col-md-12" id="footer">
+			<span id="">Copyright 2016, Feva Project Team, All rights reserved.</span>
+		</div>
+	</div>
+	<!-- End of main container -->
+</div>
+</body>
+
+<!-- bootstrap -->
+<script src="/static/js/bootstrap.js"></script>
+<!-- Flask -->
+<script type=text/javascript>
+	var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
+</html>
