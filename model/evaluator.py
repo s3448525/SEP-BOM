@@ -55,13 +55,13 @@ class Evaluator(object):
             print(forecast_value, forecast)
             # find the closest observation
             observations = observation_manager.get_observations_near(longitude, latitude, forecast.date_range.lower, forecast.date_range.upper, weather_type, max_distance=max_distance, limit=1)
-            print(observations)
             if len(observations) < 1:
                 raise GeneralException("No observation found.")
             observation = observations[0]
+            print(observation)
 
             # Evaluate the forecast
-            results.append(dict(forecast=forecast, observation=observation, evaluation=self.evaluate(forecast_value, observation)))
+            results.append(dict(forecast=forecast_value, observation=observation, accuracy=self.evaluate(forecast_value, observation)))
 
         # return the result
         return results
