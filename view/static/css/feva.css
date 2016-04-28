@@ -109,3 +109,7 @@ input[type="text"], select[id="select-data-type"], button[id="button-search"] {
 button[id="button-search"] {
   width: 50px;
 } 
+
+#location-coord-box {
+  display: none;
+}

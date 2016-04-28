@@ -23,7 +23,7 @@
 	<div class="row" id="header-wrapper">
 		<!-- This row should contain the heading and perhaps a navigation bar -->
 		<div class="col-md-12">
-			<h3>Feva - Weather Forcast Accuracy</h3>
+			<h3 style="font-weight: bold;">Feva - Weather Forcast Accuracy</h3>
 		</div>
 	</div>
 
@@ -33,7 +33,7 @@
 			<span id="current-city-label"></span>
 			<select id="select-data-type">
 				<!-- Types of forecast/observation data to be displayed -->
-				<option value="rainfall">Rainfall</option>
+				<option value="rain">Rainfall</option>
 				<option value="temperature">Temperature</option>
 				<option value="wind_speed">Wind Speed</option>
 				<option value="wind_direction">Wind Direction</option>
@@ -42,35 +42,39 @@
 			</select>
 			<span> </span>
 			<!-- <label class="search-bar-label">Location:</label> -->
-			<input type="text" name="input_location" id="search-box" placeholder="Melbourne, AU" >
-			<button id="button-search" onclick="">Search</span></button>
+			<input type="text" name="input_location" id="search-box" placeholder="Search for place">
+			<input type="text" name="input_location_coord" id="location-coord-box" value="">
+			<button id="button-search" onclick="search()">Search</span></button>
 			
 			<!-- Search button action script -->
 			<script type=text/javascript>
-				$(function search() {
+				function search() {
 					// Feva API call to retrieve JSON object
-					$('button#button-search').bind('click', function() {
-						var e = document.getElementById("select-data-type");
-						alert("Location: " + $('input[name="input_location"]').val() + "\n" +
-							  "Type: " + e.options[e.selectedIndex].value + "\n");
-						// TODO: send search request
-						// $.getJSON($SCRIPT_ROOT + '/_search', {
-						// 	type: e.options[e.selectedIndex].value;
-						// 	location: $('input[name="input_location"]').val()
-						// }, 
-						for (i = 1; i <= 8; i++) { 
-							// TODO: display returned data
-							document.getElementById("data-table-content-row-"+i).innerHTML = "\
-								<td>dd/mm/yy "+i+"</td>\
-								<td>forecast_data "+i+"</td>\
-								<td>observation_data "+i+"</td>\
-								<td>diff "+i+"</td>\
-							";
-						}
-						// return false;
-					});
+					var e = document.getElementById("select-data-type");
+					var data_type = e.options[e.selectedIndex].value;
+					var lat = $('input[name="input_location_coord"]').val().split(",")[0];
+					var lon = $('input[name="input_location_coord"]').val().split(",")[1];
+					// alert() is only for debug 
+					alert("Latitude: " + lat + "\n" +
+						  "Longitude: " + lon + "\n" +
+						  "Type: " + data_type + "\n");
+					// TODO: send search request
+					// $.getJSON($SCRIPT_ROOT + 'api/evaluate', {
+					// 	type: e.options[e.selectedIndex].value;
+					//  latitude: lat;
+					//  longitude: lon;
+					// }, 
+					for (i = 1; i <= 8; i++) { 
+						// TODO: display returned data
+						document.getElementById("data-table-content-row-"+i).innerHTML = "\
+							<td>dd/mm/yy "+i+"</td>\
+							<td>forecast_data "+i+"</td>\
+							<td>observation_data "+i+"</td>\
+							<td>diff "+i+"</td>\
+						";
+					}
 					// Add Google map marker?
-				});
+				}
 			</script>
 		</div>
 	</div>
@@ -113,11 +117,6 @@
 						zoomControl: false,
 					});
 					searchBox = new google.maps.places.SearchBox(document.getElementById('search-box'));
-					// google.maps.event.addListener(searchBox, 'places_changed', processPlacesSearch);
-
-					//input associated with the searchBox
-					google.maps.event.trigger( searchBox, 'focus');
-					google.maps.event.trigger( searchBox, 'keydown', {keyCode:13});
 
 					// Create the search box and link it to the UI element.
 					var input = document.getElementById('search-box');
@@ -138,6 +137,10 @@
 							return;
 						}
 
+						// Save location coordinates for later use
+						document.getElementById('location-coord-box').value = 
+							places[0].geometry.location.lat() + "," + places[0].geometry.location.lng();
+
 						// Clear out the old markers.
 						markers.forEach(function(marker) {
 							marker.setMap(null);
@@ -147,18 +150,9 @@
 						// For each place, get the icon, name and location.
 						var bounds = new google.maps.LatLngBounds();
 						places.forEach(function(place) {
-							var icon = {
-								url: place.icon,
-								size: new google.maps.Size(71, 71),
-								origin: new google.maps.Point(0, 0),
-								anchor: new google.maps.Point(17, 34),
-								scaledSize: new google.maps.Size(25, 25)
-							};
-
 							// Create a marker for each place.
 							markers.push(new google.maps.Marker({
 								map: map,
-								icon: icon,
 								title: place.name,
 								position: place.geometry.location
 							}));
@@ -171,10 +165,11 @@
 							}
 						});
 						map.fitBounds(bounds);
+						search();
 					});
-
+					// Focus to users location
 					getUserLocation();
-					
+					// Display observation points
 					addMarkers(map);
 				}
 				// Get user's location
@@ -191,9 +186,7 @@
 					var lng = position.coords.longitude;
 					map.setCenter(new google.maps.LatLng(lat, lng));
 				}
-				var locations = [
-					["Melbourne", -37.8095, 144.964]
-				];
+				var locations = [];
 				// Load all forecast/observation location points into an array and load to map
 				function addMarkers(map) {
 					for (var i = 0; i < locations.length; i++) {
