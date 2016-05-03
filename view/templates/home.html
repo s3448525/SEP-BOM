@@ -40,11 +40,10 @@
 				<option value="cloud">Cloud</option>
 				<option value="humidity">Humidity</option>
 			</select>
-			<span> </span>
 			<!-- <label class="search-bar-label">Location:</label> -->
 			<input type="text" name="input_location" id="search-box" placeholder="Search for place">
 			<input type="text" name="input_location_coord" id="location-coord-box" value="">
-			<button id="button-search" onclick="search()">Search</span></button>
+			<button id="button-search" onclick="search()">Search</button>
 			
 			<!-- Search button action script -->
 			<script type=text/javascript>
@@ -54,25 +53,39 @@
 					var data_type = e.options[e.selectedIndex].value;
 					var lat = $('input[name="input_location_coord"]').val().split(",")[0];
 					var lon = $('input[name="input_location_coord"]').val().split(",")[1];
+					var location = $('input[name="input_location"]').val();
 					// alert() is only for debug 
-					alert("Latitude: " + lat + "\n" +
-						  "Longitude: " + lon + "\n" +
-						  "Type: " + data_type + "\n");
-					// TODO: send search request
-					// $.getJSON($SCRIPT_ROOT + 'api/evaluate', {
-					// 	type: e.options[e.selectedIndex].value;
-					//  latitude: lat;
-					//  longitude: lon;
-					// }, 
-					for (i = 1; i <= 8; i++) { 
-						// TODO: display returned data
-						document.getElementById("data-table-content-row-"+i).innerHTML = "\
-							<td>dd/mm/yy "+i+"</td>\
-							<td>forecast_data "+i+"</td>\
-							<td>observation_data "+i+"</td>\
-							<td>diff "+i+"</td>\
-						";
+					if (location == '' || location == null) {
+						alert("Please select a location");
+						return;
+					} else {
+						alert("Latitude: " + lat + "\n" +
+							  "Longitude: " + lon + "\n" +
+						  	  "Type: " + data_type + "\n");
 					}
+					// TODO: send search request
+					$.getJSON($SCRIPT_ROOT + 'api/evaluate', {
+						type: e.options[e.selectedIndex].value,
+						latitude: lat,
+						longitude: lon
+					}, function(data) {
+						console.log(data);
+						if(data.success == false) {
+							document.getElementById("data-table-content-row-1").innerHTML = 
+								"<td>" + data.message + "</td>";
+						} else {
+							// Display data
+						}
+					});
+					// for (i = 1; i <= 8; i++) { 
+					// 	// TODO: display returned data
+					// 	document.getElementById("data-table-content-row-"+i).innerHTML = "\
+					// 		<td>dd/mm/yy "+i+"</td>\
+					// 		<td>forecast_data "+i+"</td>\
+					// 		<td>observation_data "+i+"</td>\
+					// 		<td>diff "+i+"</td>\
+					// 	";
+					// }
 					// Add Google map marker?
 				}
 			</script>
