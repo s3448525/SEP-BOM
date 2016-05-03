@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
+
 from flask import Flask
+import ssl
 
 from controller.data_api import api_data_bp
 from controller.ui import ui_bp
@@ -23,6 +26,9 @@ def shutdown_session(exception=None):
 app.register_blueprint(ui_bp)
 app.register_blueprint(api_data_bp)
 
+# Create SSL context
+context = (app.config['SSL_CRT'], app.config['SSL_KEY'])
+
 # debugging only
 if __name__ == '__main__':
-    app.run(port=8080, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True, ssl_context='adhoc', threaded=True)

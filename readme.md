@@ -16,3 +16,4 @@ These can all be installed using `pip install <package>`
  * sqlalchemy
  * geoalchemy2
  * voluptuous
+ * netCDF4
