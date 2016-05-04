@@ -37,6 +37,8 @@ def fetch_forecast(fc_filter={'name': [], 'after': None}):
             forecasts = fetch_opendap(config, fc_filter)
         else:
             raise Exception('unsupported fetch method')
+        # Skip forecast if it was not created recently.
+        # TODO
         # Apply post processing.
         post_process_forecasts(forecasts, config)
         # Yield each forecast.
@@ -99,14 +101,11 @@ def fetch_ftp(config, fc_filter):
                 ds.variables['time'][time_index], forecast, ds, config)
             forecasts.append(forecast)
             time_index += 1
-            break #this is just here for debugging to limit the number of fetched forecasts, TODO remove this later.
         # Close the dataset.
         ds.close()
         # Remove the temp file.
         print('Deleteing: {}'.format(temp_file_name))
         os.remove(temp_file_name)
-        if len(forecasts) == 1: #this is just here for debugging to limit the number of fetched forecasts, TODO remove this later.
-            break
     # Return data.
     return forecasts
 
@@ -134,11 +133,8 @@ def fetch_opendap(config, fc_filter):
                 ds.variables['time'][time_index], forecast, ds, config)
             forecasts.append(forecast)
             time_index += 1
-            break #this is just here for debugging to limit the number of fetched forecasts, TODO remove this later.
         # Close the opendap dataset.
         ds.close()
-        if len(forecasts) == 1: #this is just here for debugging to limit the number of fetched forecasts, TODO remove this later.
-            break
     # Return data.
     return forecasts
 
@@ -146,10 +142,7 @@ def fetch_opendap(config, fc_filter):
 def post_process_forecasts(forecasts, config):
     prev_values = 0
     for fc in forecasts:
-        # Interpret the time value.
-#        if config['time_type'] == 'UnixTime':
-#            forecast['time'] = Datetime.fromtimestamp(forecast['time'])
-        # Optionally subtract previous values from the current values (usefull
+        # Optionally subtract previous values from the current values (useful
         # for un-accumulating values).
         if config['sub_prev']:
             fc['values'] = fc['values'] - prev_values
