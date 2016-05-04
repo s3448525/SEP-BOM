@@ -7,6 +7,8 @@ from controller.data_api import api_data_bp
 from controller.ui import ui_bp
 from model.orm import ORM
 
+import logging
+
 # create a new wsgi application
 app = Flask('feva', static_folder='view/static', template_folder='view/templates')
 
@@ -28,6 +30,11 @@ app.register_blueprint(api_data_bp)
 
 # Create SSL context
 context = (app.config['SSL_CRT'], app.config['SSL_KEY'])
+
+# Debug logging
+file_handler = logging.FileHandler('/tmp/Feva.log')
+file_handler.setLevel(logging.WARNING)
+app.logger.addHandler(file_handler)
 
 # debugging only
 if __name__ == '__main__':

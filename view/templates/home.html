@@ -11,6 +11,10 @@
 	<!-- Bootstrap. Change to min for production -->
 	<link rel="stylesheet" href="/static/css/bootstrap.css" />
 	<link rel="stylesheet" href="/static/css/bootstrap-theme.css" />
+	<!-- Date Range Picker -->
+	<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+	<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+	<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 	<!-- Override bootstrap with custom css -->
 	<link rel="stylesheet" href="/static/css/feva.css" />
 	<!-- Site title & etc. -->
@@ -40,11 +44,28 @@
 				<option value="cloud">Cloud</option>
 				<option value="humidity">Humidity</option>
 			</select>
+			<input type="text" name="daterange" id="date-range-picker" >
+			<script type=text/javascript>
+				var startDate = new Date(new Date().setDate(new Date().getDate()-7));
+				var endDate = new Date;	// Today
+				// Configure date range picker
+				$('input[name="daterange"]').daterangepicker(
+				{
+					locale: {
+						format: 'YYYY-MM-DD'
+					},
+					startDate: startDate,
+					endDate: endDate
+				}, function(start, end, label) {
+					console.log("A new date range was chosen: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+					startDate = new Date(start.format('YYYY-MM-DD'));
+					endDate = new Date(end.format('YYYY-MM-DD'));
+				});
+			</script>
 			<!-- <label class="search-bar-label">Location:</label> -->
 			<input type="text" name="input_location" id="search-box" placeholder="Search for place">
 			<input type="text" name="input_location_coord" id="location-coord-box" value="">
 			<button id="button-search" onclick="search()">Search</button>
-			
 			<!-- Search button action script -->
 			<script type=text/javascript>
 				function search() {
@@ -54,27 +75,38 @@
 					var lat = $('input[name="input_location_coord"]').val().split(",")[0];
 					var lon = $('input[name="input_location_coord"]').val().split(",")[1];
 					var location = $('input[name="input_location"]').val();
+					// var time = '2016-05-04T08:00:00.0Z';
+					var time = endDate.toISOString().substring(0, 10) + "T08:00:00.0Z";
+					var max_dist = 5000; // meters
 					// alert() is only for debug 
 					if (location == '' || location == null) {
 						alert("Please select a location");
 						return;
 					} else {
 						alert("Latitude: " + lat + "\n" +
-							  "Longitude: " + lon + "\n" +
-						  	  "Type: " + data_type + "\n");
+									"Longitude: " + lon + "\n" +
+									"Type: " + data_type + "\n" +
+									"Max Distance: " + max_dist + "\n" +
+									"Time: " + time);
 					}
-					// TODO: send search request
+					// Send search request
 					$.getJSON($SCRIPT_ROOT + 'api/evaluate', {
 						weather_type: e.options[e.selectedIndex].value,
 						latitude: lat,
-						longitude: lon
+						longitude: lon,
+						max_distance: max_dist,
+						time: time
 					}, function(data) {
 						console.log(data);
 						if(data.success == false) {
 							document.getElementById("data-table-content-row-1").innerHTML = 
 								"<td>" + data.message + "</td>";
 						} else {
-							// Display data
+							document.getElementById("data-table-content-row-1").innerHTML = 
+								"<td>" + data.data[0].observation.time.split("T")[0] + "</td>" + 
+								"<td>" + data.data[0].forecast.value + "mm" + "</td>" +
+								"<td>" + data.data[0].observation.value + "mm" + "</td>" +
+								"<td>" + (data.data[0].forecast.value - data.data[0].observation.value) + "</td>";
 						}
 					});
 					// for (i = 1; i <= 8; i++) { 

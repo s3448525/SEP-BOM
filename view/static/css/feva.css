@@ -102,7 +102,7 @@ input[type="text"], select[id="select-data-type"], button[id="button-search"] {
   width: 150px;
   padding: 0px;
   border: none;
-  border-bottom: solid 1px #252525;
+  border-bottom: solid 1px #4682B4;
   font-size: 12px;
 }
 
