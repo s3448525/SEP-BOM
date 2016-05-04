@@ -31,4 +31,4 @@ context = (app.config['SSL_CRT'], app.config['SSL_KEY'])
 
 # debugging only
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True, ssl_context='adhoc', threaded=True)
+    app.run(host='0.0.0.0', port=443, debug=True, ssl_context='adhoc', threaded=True)
