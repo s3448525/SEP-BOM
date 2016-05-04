@@ -15,7 +15,8 @@ class Evaluator(object):
         validator.Optional('weather_type', default='rain'): validator.Coerce(str)
     }
     # The probability of rainfall which gives the 'Umbrella' icon
-    RAINFALL_THRESHOLD = 20
+    RAINFALL_3HR_THRESHOLD = 15
+    RAINFALL_24HR_THRESHOLD = 25
 
     def __init__(self, db):
         self.db = db
@@ -73,11 +74,11 @@ class Evaluator(object):
         :param observation: The observation object (ORM)
         :return: True or False
         """
-        if forecast_value.value >= self.RAINFALL_THRESHOLD and observation.value > 0:
+        if forecast_value.value >= self.RAINFALL_3HR_THRESHOLD and observation.value > 0:
             # predicted rain and was raining
             return True
 
-        elif forecast_value.value < self.RAINFALL_THRESHOLD and observation == 0:
+        elif forecast_value.value < self.RAINFALL_3HR_THRESHOLD and observation.value == 0:
             # didn't predict rain and wasn't raining
             return True
         else:
