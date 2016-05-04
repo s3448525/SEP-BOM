@@ -65,7 +65,7 @@
 					}
 					// TODO: send search request
 					$.getJSON($SCRIPT_ROOT + 'api/evaluate', {
-						type: e.options[e.selectedIndex].value,
+						weather_type: e.options[e.selectedIndex].value,
 						latitude: lat,
 						longitude: lon
 					}, function(data) {
