@@ -70,55 +70,98 @@
 			<script type=text/javascript>
 				function search() {
 					// Feva API call to retrieve JSON object
-					var e = document.getElementById("select-data-type");
-					var data_type = e.options[e.selectedIndex].value;
-					var lat = $('input[name="input_location_coord"]').val().split(",")[0];
-					var lon = $('input[name="input_location_coord"]').val().split(",")[1];
-					var location = $('input[name="input_location"]').val();
-					// var time = '2016-05-04T08:00:00.0Z';
-					var time = endDate.toISOString().substring(0, 10) + "T08:00:00.0Z";
-					var max_dist = 5000; // meters
+					var e = document.getElementById("select-data-type"),
+						data_type = e.options[e.selectedIndex].value,
+						lat = $('input[name="input_location_coord"]').val().split(",")[0],
+						lon = $('input[name="input_location_coord"]').val().split(",")[1],
+						location = $('input[name="input_location"]').val(),
+						time = endDate.toISOString().substring(0, 10) + "T08:00:00.0Z",
+						max_dist = 10000; // meters
+
 					// alert() is only for debug 
 					if (location == '' || location == null) {
 						alert("Please select a location");
 						return;
 					} else {
 						alert("Latitude: " + lat + "\n" +
-									"Longitude: " + lon + "\n" +
-									"Type: " + data_type + "\n" +
-									"Max Distance: " + max_dist + "\n" +
-									"Time: " + time);
+								"Longitude: " + lon + "\n" +
+								"Type: " + data_type + "\n" +
+								"Max Distance: " + max_dist + "\n" +
+								"Time: " + time
+						);
 					}
+
+					// Clear previous content
+					var data_table = document.getElementById("data-table");
+					for (i = 1; data_table.rows.length - i > 0; ) {
+						data_table.deleteRow(data_table.rows.length - i);
+					}
+
+					// Calculate how many days of data to lookup
+					var time_span =  Math.ceil(Math.abs(endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
+					for (i = 1; i <= time_span; i++) {
+						tr = data_table.insertRow(i);
+						tr.id = "data-table-content-row-"+i;
+					}
+
+					// Initiate requests for each day
+					for (i = 0; i < time_span; i++) {
+						time = new Date((new Date).setDate(endDate.getDate()-i));
+						displayData(data_type, lat, lon, max_dist, time, i+1);
+					}
+				}
+				// Send API calls
+				function makeAPICalls(data_type, lat, lon, max_dist, time, callback){
 					// Send search request
-					$.getJSON($SCRIPT_ROOT + 'api/evaluate', {
-						weather_type: e.options[e.selectedIndex].value,
+					// console.log(data_type, lat, lon, max_dist, time);
+					var temp = $.getJSON($SCRIPT_ROOT + 'api/evaluate', {
+						weather_type: data_type,
 						latitude: lat,
 						longitude: lon,
 						max_distance: max_dist,
-						time: time
+						time: time.toISOString().substring(0, 10) + "T08\:00\:00\.0Z"
 					}, function(data) {
-						console.log(data);
-						if(data.success == false) {
-							document.getElementById("data-table-content-row-1").innerHTML = 
-								"<td>" + data.message + "</td>";
-						} else {
-							document.getElementById("data-table-content-row-1").innerHTML = 
-								"<td>" + data.data[0].observation.time.split("T")[0] + "</td>" + 
-								"<td>" + data.data[0].forecast.value + "mm" + "</td>" +
-								"<td>" + data.data[0].observation.value + "mm" + "</td>" +
+						callback(data);
+					});
+				}
+				// Display returned API data and populate the data table
+				function displayData(data_type, lat, lon, max_dist, time, row_number){
+					//get our JSON
+					console.log(data_type, lat, lon, max_dist, time, row_number);
+					makeAPICalls(data_type, lat, lon, max_dist, time, function(data){
+						//when we get our data, evaluate
+						console.log(time.toISOString().substring(0, 10));
+						if (data.success == true){
+							var unit = "";
+							switch (data_type) {
+								case "rain":
+									unit = "mm";
+									break;
+								case "temperature":
+									unit = "°C";
+									break;
+								case "wind_speed":
+									unit = "km/h"
+									break;
+								default:
+									break;
+							}
+							// Display valid data
+							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
+								"<td>" + data.data[0].observation.time.substring(0, 10) + "</td>" + 
+								"<td>" + data.data[0].forecast.value + unit + "</td>" +
+								"<td>" + data.data[0].observation.value + unit + "</td>" +
 								"<td>" + (data.data[0].forecast.value - data.data[0].observation.value) + "</td>";
+						} else {
+							// Display error
+							// console.log(time.toISOString().substring(0, 10) + " : " + data.message);
+							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
+								"<td>" + time.toISOString().substring(0, 10) + "</td>" +
+								"<td>" + "no data" + "</td>" +
+								"<td>" + "no data" + "</td>" +
+								"<td>" + "-" + "</td>";
 						}
 					});
-					// for (i = 1; i <= 8; i++) { 
-					// 	// TODO: display returned data
-					// 	document.getElementById("data-table-content-row-"+i).innerHTML = "\
-					// 		<td>dd/mm/yy "+i+"</td>\
-					// 		<td>forecast_data "+i+"</td>\
-					// 		<td>observation_data "+i+"</td>\
-					// 		<td>diff "+i+"</td>\
-					// 	";
-					// }
-					// Add Google map marker?
 				}
 			</script>
 		</div>
@@ -137,14 +180,6 @@
 					<td>Δ</td>
 				</tr>
 				<!--content row(s)-->
-				<tr id="data-table-content-row-1"></tr>
-				<tr id="data-table-content-row-2"></tr>
-				<tr id="data-table-content-row-3"></tr>
-				<tr id="data-table-content-row-4"></tr>
-				<tr id="data-table-content-row-5"></tr>
-				<tr id="data-table-content-row-6"></tr>
-				<tr id="data-table-content-row-7"></tr>
-				<tr id="data-table-content-row-8"></tr>
 			</table>
 		</div>
 		<div class="col-md-7" id="map-wrapper">
@@ -252,7 +287,8 @@
 					}
 				}
 			</script>
-			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&libraries=places&callback=initMap" async defer></script>
+			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&libraries=places&callback=initMap" 
+				async defer></script>
 		</div>
 	</div>
 

@@ -4,10 +4,8 @@
 body {
   width: 100vw;
   height: 100vh;
-  min-width: 450px;
-  min-height: 600px;
-  position: absolute;
-  background: rgba(0, 0, 0, .9);
+  /*position: absolute;*/
+  background: rgb(255, 255,255);
   font-family: "Helvatica Neue", Helvetica, sans-serif;
   margin: 0;
   padding: 0;
@@ -15,10 +13,11 @@ body {
 }
 
 #main-container {
-  width: 100%;
+  max-width: 960px;
+  min-width: 560px;
   height: 100%;
   bottom: 0;
-  position:absolute;
+  position:relative;
   background: rgba(200, 200, 200, .8);
 }
 
@@ -38,7 +37,7 @@ body {
 }
 
 #main-content-wrapper {
-  height: 80%;
+  height: 88%;
   top: 0px;
   bottom: 0px;
   position: relative;
@@ -74,7 +73,7 @@ body {
 }
 
 #map-wrapper {
-  height: 100%;
+  max-height: 640px;
   background: rgba(0,0,0,1);
 }
 
@@ -88,7 +87,7 @@ body {
   min-height: 20px;
   position: fixed;
   bottom: 0;
-  width: 100%;
+  width: 960px;
   background: rgba(0, 0, 0, .5);
   color: rgba(0, 0, 0, 1);
 }
