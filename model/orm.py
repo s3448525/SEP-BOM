@@ -7,7 +7,7 @@ from model import schema
 class ORM(object):
 
     def __init__(self, host, port, username, password):
-        self.engine = sqlalchemy.create_engine('postgresql://%s:%s@%s:%d/feva' % (username, password, host, port))
+        self.engine = sqlalchemy.create_engine('postgresql://%s:%s@%s:%d/feva' % (username, password, host, port), pool_size=20, max_overflow=0)
         self.session_factory = sessionmaker(bind=self.engine)
         schema.metadata.create_all(self.engine)
         # Create a scoped_session that helps create & reuse a session for each

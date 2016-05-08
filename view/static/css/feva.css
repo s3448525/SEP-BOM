@@ -73,7 +73,7 @@ body {
 }
 
 #map-wrapper {
-  max-height: 640px;
+  height: 640px;
   background: rgba(0,0,0,1);
 }
 

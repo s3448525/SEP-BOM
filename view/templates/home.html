@@ -54,6 +54,9 @@
 					locale: {
 						format: 'YYYY-MM-DD'
 					},
+					"dateLimit": {
+						"days": 7
+					},
 					startDate: startDate,
 					endDate: endDate
 				}, function(start, end, label) {
@@ -146,15 +149,29 @@
 								default:
 									break;
 							}
+							console.log(data);
+							// Get returned data average
+							var observation_points = [];
+							var forecast_value_average = 0, observation_value_average = 0;
+							for (i = 0; i < data.data.length; i++) {
+								forecast_value_average += data.data[i].forecast.value;
+								observation_value_average += data.data[i].observation.value;
+								observation_points[i] = [data.data[i].observation.value.toString(),
+														data.data[i].observation.location[0],
+														data.data[i].observation.location[1]];
+							}
+							forecast_value_average = parseInt(forecast_value_average / data.data.length);
+							observation_value_average = parseInt(observation_value_average / data.data.length);
+							//addMarkers(map, observation_points);
 							// Display valid data
 							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
 								"<td>" + data.data[0].observation.time.substring(0, 10) + "</td>" + 
-								"<td>" + data.data[0].forecast.value + unit + "</td>" +
-								"<td>" + data.data[0].observation.value + unit + "</td>" +
-								"<td>" + (data.data[0].forecast.value - data.data[0].observation.value) + "</td>";
+								"<td>" + forecast_value_average.toString() + unit + "</td>" +
+								"<td>" + observation_value_average.toString() + unit + "</td>" +
+								"<td>" + (forecast_value_average - observation_value_average) + "</td>";
 						} else {
 							// Display error
-							// console.log(time.toISOString().substring(0, 10) + " : " + data.message);
+							console.log(time.toISOString().substring(0, 10) + " : " + data.message);
 							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
 								"<td>" + time.toISOString().substring(0, 10) + "</td>" +
 								"<td>" + "no data" + "</td>" +
@@ -188,6 +205,7 @@
 			<!-- Configure map script -->
 			<script>
 				var map, searchBox, geocoder;
+				var locations = [];
 				// Google maps initialiser
 				function initMap() {
 					map = new google.maps.Map(document.getElementById('map'), {
@@ -248,9 +266,10 @@
 						search();
 					});
 					// Focus to users location
-					getUserLocation();
+					//getUserLocation();
+					map.panTo(new google.maps.LatLng(-37.8095,144.964));
 					// Display observation points
-					addMarkers(map);
+					addMarkers(map, locations);
 				}
 				// Get user's location
 				function getUserLocation() {
@@ -266,18 +285,17 @@
 					var lng = position.coords.longitude;
 					map.setCenter(new google.maps.LatLng(lat, lng));
 				}
-				var locations = [];
 				// Load all forecast/observation location points into an array and load to map
-				function addMarkers(map) {
+				function addMarkers(map, locations) {
 					for (var i = 0; i < locations.length; i++) {
 						var loc = locations[i];
-						// var icon = {
-						// 	url: "../static/images/weather-radar-512.png",
-						// 	size: new google.maps.Size(31, 71),
-						// 	origin: new google.maps.Point(0, 0),
-						// 	anchor: new google.maps.Point(17, 34),
-						// 	scaledSize: new google.maps.Size(11, 25)
-						// };
+						var icon = {
+							url: "../static/images/weather-radar-512.png",
+							size: new google.maps.Size(31, 71),
+							origin: new google.maps.Point(0, 0),
+							anchor: new google.maps.Point(17, 34),
+							scaledSize: new google.maps.Size(11, 25)
+						};
 						var marker = new google.maps.Marker({
 							position: {lat: loc[1], lng: loc[2]},
 							// icon: icon,
