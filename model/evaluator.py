@@ -3,6 +3,7 @@ from model.observation import ObservationManager
 from model.helpers.web import GeneralException
 from model.forecast import ForecastManager
 from model.helpers import validator
+import logging
 
 
 class Evaluator(object):
@@ -38,6 +39,7 @@ class Evaluator(object):
         :param forecast_source: the source of the forecast. currently only supports 'bom'
         :return: the forecast, the observation and the evaluation
         """
+        log = logging.getLogger(__name__)
 
         if time is None:
             time = datetime.datetime.utcnow()
@@ -53,13 +55,13 @@ class Evaluator(object):
 
         # Find the closest observations for each forecast.
         for forecast_value, forecast in forecasts:
-            print(forecast_value, forecast)
+            log.debug(str(forecast_value)+' '+str(forecast))
             # find the closest observation
             observations = observation_manager.get_observations_near(longitude, latitude, forecast.date_range.lower, forecast.date_range.upper, weather_type, max_distance=max_distance, limit=1)
             if len(observations) < 1:
                 raise GeneralException("No observation found.")
             observation = observations[0]
-            print(observation)
+            log.debug(str(observation))
 
             # Evaluate the forecast
             results.append(dict(forecast=forecast_value, observation=observation, accuracy=self.evaluate(forecast_value, observation)))

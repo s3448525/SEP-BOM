@@ -8,7 +8,7 @@ import sys
 import os
 from io import BytesIO
 import tempfile
-
+import logging
 
 def fetch_forecast(fc_filter={'name': [], 'after': None}):
     '''
@@ -21,8 +21,9 @@ def fetch_forecast(fc_filter={'name': [], 'after': None}):
     fc_filter['after'] is optionally a timestamp which specifies only
         forecasts made after this time will be fetched.
     '''
+    log = logging.getLogger(__name__)
     configs = model.forecast_config.configs
-    print('Number of Forecast Configs: '+str(len(configs)))
+    log.debug('Number of Forecast Configs: '+str(len(configs)))
     for config in configs:
         # Skip if the name is not in the filter and the filter is active.
         if len(fc_filter['name']) > 0 and (config['name'] not in fc_filter['name']):
@@ -47,20 +48,23 @@ def fetch_forecast(fc_filter={'name': [], 'after': None}):
 
 
 def fetch_ftp(config, fc_filter):
+    log = logging.getLogger(__name__)
     forecasts = []
     for url in config['urls']:
         # Access file via ftp.
         url_parts = urlparse(url)
         data_dir = os.path.dirname(url_parts.path)[1:]
         data_name = os.path.basename(url_parts.path)
-        print('Fetching {} ({} {})'.format(url, data_dir, data_name))
+        log.debug('Fetching {} ({} {})'.format(url, data_dir, data_name))
         ftp = FTP(url_parts.hostname, config['user'], config['passwd'])
+#TODO detect and handle failed connection
         ftp.login(user=config['user'], passwd=config['passwd'])
+#TODO detect and handle failed login
         ftp.cwd(data_dir)
 #        # Skip file if it has not been modified recently.
 #        if fc_filter['after']:
 #            mod_time = string.replace(ftp.sendcmd('MDTM filename'), '213 ', '')
-#            print('mod_time: {}'.format(str(mod_time)))
+#            log.debug('mod_time: {}'.format(str(mod_time)))
 #            if datetime.strptime(mod_time, '%Y%m%d%%H%M%S') <= fc_filter['after']:
 #                return None
         # Download the file.
@@ -69,20 +73,19 @@ def fetch_ftp(config, fc_filter):
         ftp.quit()
         temp_file = tempfile.NamedTemporaryFile(mode='w+b', prefix='feva_', delete=False)
         temp_file_name = temp_file.name
-        print('temp file: {}'.format(temp_file_name))
         # Write to a temp file.
         if(config['gzip']):
             # Decompress and write to file.
-            print('Un-gzipping & writing')
+            log.debug('Un-gzipping & writing to temp file ({}).'.format(temp_file_name))
             temp_file.write(gzip.decompress(raw_data.getvalue()))
         else:
             # Otherwise just write to file.
-            print('Writing')
+            log.debug('Writing to temp file ({}).'.format(temp_file_name))
             temp_file.write(raw_data.getvalue())
         raw_data.close()
         temp_file.close()
         # Open the dataset.
-        print('Opening dataset')
+        log.debug('Opening temp file dataset.')
         ds = Dataset(temp_file_name, mode='r')
         # Create a forecast for each time index.
         time_index = 0
@@ -104,17 +107,18 @@ def fetch_ftp(config, fc_filter):
         # Close the dataset.
         ds.close()
         # Remove the temp file.
-        print('Deleteing: {}'.format(temp_file_name))
+        log.debug('Deleteing temp file: {}'.format(temp_file_name))
         os.remove(temp_file_name)
     # Return data.
     return forecasts
 
 
 def fetch_opendap(config, fc_filter):
+    log = logging.getLogger(__name__)
     forecasts = []
     for url in config['urls']:
         # Open dataset via opendap.
-        print('Fetching '+url)
+        log.debug('Fetching '+url)
         ds = Dataset(url, mode='r')
         # Create a forecast for each time index.
         time_index = 0
