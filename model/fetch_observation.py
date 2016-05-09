@@ -1,5 +1,6 @@
 import model.observation_config
 import datetime
+import logging
 
 
 def fetch_observation(obs_filter={'name': [], 'after': None}):
@@ -14,8 +15,9 @@ def fetch_observation(obs_filter={'name': [], 'after': None}):
     fc_filter['after'] is optionally a timestamp which specifies only
         observations made after this time will be fetched.
     '''
+    log = logging.getLogger(__name__)
     configs = model.observation_config.configs
-    print('Number of Observation Configs: '+str(len(configs)))
+    log.debug('Number of Observation Configs: '+str(len(configs)))
     for config in configs:
         for obs in config['fetch_func']():
             yield obs
