@@ -18,12 +18,12 @@ body {
   height: 100%;
   bottom: 0;
   position:relative;
-  background: rgba(200, 200, 200, .8);
+  /*background: rgba(200, 200, 200, .8);*/
 }
 
 #header-wrapper {
   height: 60px;
-  background: rgba(0, 0, 0, .1);
+  /*background: rgba(0, 0, 0, .1);*/
 }
 
 #search-bar-wrapper {
@@ -41,8 +41,6 @@ body {
   top: 0px;
   bottom: 0px;
   position: relative;
-  background: rgba(255, 0, 0, .5);
-  background: rgba(0, 0, 0, .3);
 }
 
 #map-wrapper, #data-table-wrapper {
@@ -62,6 +60,10 @@ body {
 
 #data-table tr {
   height: 30px;
+}
+
+#data-table tr td {
+  width: 30%;
 }
 
 #data-table tr td:nth-child(1) {

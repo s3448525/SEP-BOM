@@ -7,7 +7,7 @@ from model import schema
 class ORM(object):
 
     def __init__(self, host, port, username, password):
-        self.engine = sqlalchemy.create_engine('postgresql://%s:%s@%s:%d/feva' % (username, password, host, port), pool_size=20, max_overflow=0)
+        self.engine = sqlalchemy.create_engine('postgresql://%s:%s@%s:%d/feva' % (username, password, host, port), pool_size=20, max_overflow=100)
         self.session_factory = sessionmaker(bind=self.engine)
         schema.metadata.create_all(self.engine)
         # Create a scoped_session that helps create & reuse a session for each
@@ -15,12 +15,14 @@ class ORM(object):
         # see http://flask.pocoo.org/docs/0.10/patterns/sqlalchemy/
         self.session = scoped_session(self.session_factory)
 
+    @contextmanager
     def shutdown_session(self):
         '''
         Shutdown the session inside the scoped_session registry.
         Usefull at the end of a webserver request.
         '''
         self.session.remove()
+        self.session.close()
 
     @contextmanager
     def transaction_session(self):
