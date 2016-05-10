@@ -49,7 +49,7 @@ class Evaluator(object):
         results = []
 
         # Find the closest forecasts.
-        forecasts = forecast_manager.get_forecasts_near(longitude, latitude, time, max_distance=max_distance, limit=3)
+        forecasts = forecast_manager.get_forecasts_near(longitude, latitude, time, max_distance=max_distance, limit=5)
         if len(forecasts) < 1:
             raise GeneralException("No forecast found.")
 
@@ -57,7 +57,14 @@ class Evaluator(object):
         for forecast_value, forecast in forecasts:
             log.debug(str(forecast_value)+' '+str(forecast))
             # find the closest observation
-            observations = observation_manager.get_observations_near(longitude, latitude, forecast.date_range.lower, forecast.date_range.upper, weather_type, max_distance=max_distance, limit=1)
+            observations = observation_manager.get_observations_near(
+                    longitude,
+                    latitude,
+                    forecast.date_range.lower,
+                    forecast.date_range.upper,
+                    weather_type,
+                    max_distance=max_distance,
+                    limit=1)
             if len(observations) < 1:
                 raise GeneralException("No observation found.")
             observation = observations[0]

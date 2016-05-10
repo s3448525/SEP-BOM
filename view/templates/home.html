@@ -21,20 +21,20 @@
 	<title>Feva</title>
 </head>
 
-<body>
+<body onload="">
 <div class="container" id="main-container">
 	<!-- Main container -->
 	<div class="row" id="header-wrapper">
 		<!-- This row should contain the heading and perhaps a navigation bar -->
 		<div class="col-md-12">
-			<h3 style="font-weight: bold;">Feva - Weather Forcast Accuracy</h3>
+			<h3>Feva</h3>
+			<span style="font-size: 12px;">: evaluate weather forecast accuracy</span>
+			<span id="clock" style="display: inline-block;"></span>
 		</div>
 	</div>
 
 	<div class="row" id="search-bar-wrapper">
 		<div class="col-md-12" id="search-components-wrapper">
-			<!-- Display city name here -->
-			<span id="current-city-label"></span>
 			<select id="select-data-type">
 				<!-- Types of forecast/observation data to be displayed -->
 				<option value="rain">Rainfall</option>
@@ -45,6 +45,7 @@
 				<option value="humidity">Humidity</option>
 			</select>
 			<input type="text" name="daterange" id="date-range-picker" >
+			
 			<script type=text/javascript>
 				var startDate = new Date(new Date().setDate(new Date().getDate()-7));
 				var endDate = new Date;	// Today
@@ -94,6 +95,10 @@
 						);
 					}
 
+					// Update location name label
+					document.getElementById("location-name-label").innerHTML = 
+						$('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1]
+
 					// Clear previous content
 					var data_table = document.getElementById("data-table");
 					for (i = 1; data_table.rows.length - i > 0; ) {
@@ -127,13 +132,13 @@
 						callback(data);
 					});
 				}
+
 				// Display returned API data and populate the data table
 				function displayData(data_type, lat, lon, max_dist, time, row_number){
 					//get our JSON
 					console.log(data_type, lat, lon, max_dist, time, row_number);
 					makeAPICalls(data_type, lat, lon, max_dist, time, function(data){
 						//when we get our data, evaluate
-						console.log(time.toISOString().substring(0, 10));
 						if (data.success == true){
 							var unit = "";
 							switch (data_type) {
@@ -171,7 +176,7 @@
 								"<td>" + (forecast_value_average - observation_value_average) + "</td>";
 						} else {
 							// Display error
-							console.log(time.toISOString().substring(0, 10) + " : " + data.message);
+							console.log(data);
 							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
 								"<td>" + time.toISOString().substring(0, 10) + "</td>" +
 								"<td>" + "no data" + "</td>" +
@@ -186,20 +191,58 @@
 
 	<div class="row" id="main-content-wrapper">
 		<!-- This is where main content goes, a giant table of data and an interactive map -->
-		<div class="col-md-5" id="data-table-wrapper">
-			<!-- A giant table -->
-			<table style="width: 100%;" id="data-table">
-				<!--title row-->
-				<tr style="font-weight: bold;" id="data-table-title-row">
-					<td>Date</td>
-					<td>Forecast</td>
-					<td>Actual</td>
-					<td>Δ</td>
-				</tr>
-				<!--content row(s)-->
-			</table>
+		<div class="col-md-4" id="data-table-wrapper">
+			<div class="sidebar-sections" id="location-data">
+				<a class="show-hide-button" data-toggle="collapse" data-target="#data-table">
+					<span id="location-name-label">no evaluation result</span>
+					<span class="glyphicon glyphicon-info-sign"></span>
+				</a>
+				<!-- A giant table -->
+				<table style="width: 100%;" id="data-table" class="collapse">
+					<!--title row-->
+					<tr style="font-weight: bold;" id="data-table-title-row">
+						<td>Date</td>
+						<td>Forecast</td>
+						<td>Actual</td>
+						<td>Δ</td>
+					</tr>
+					<!--content row(s)-->
+					<tr>
+						<td>-</td>
+						<td>-</td>
+						<td>-</td>
+						<td>-</td>
+					</tr>
+				</table>
+			</div>
+
+			<div class="sidebar-sections" id="settings">
+				<a class="show-hide-button" data-toggle="collapse" data-target="">
+					<span>Settings</span>
+					<span class="glyphicon glyphicon-cog"></span>
+				</a>
+				<form>
+					<span class="settings-label">Forecast Source: 
+						<input class="settings-input" type="text"></input>
+					</span>
+					<span class="settings-label">Observation Source:
+						<input class="settings-input" type="text"></input>
+					</span>
+					<span class="settings-label">Radius: 
+					<input class="settings-input" type="text"></input>
+					</span>
+				</form>
+			</div>
+
+			<div class="sidebar-sections">
+				<a class="show-hide-button" data-toggle="collapse" data-target="">
+					<span>foo</span>
+					<span class="glyphicon"></span>
+				</a>
+			</div>
 		</div>
-		<div class="col-md-7" id="map-wrapper">
+
+		<div class="col-md-8" id="map-wrapper">
 			<!-- An interactive map -->
 			<div id="map"></div>
 			<!-- Configure map script -->
@@ -209,7 +252,7 @@
 				// Google maps initialiser
 				function initMap() {
 					map = new google.maps.Map(document.getElementById('map'), {
-						zoom: 12,
+						zoom: 8,
 						mapTypeControlOptions: { mapTypeIds: [] },
 						streetViewControl: false,
 						zoomControl: false,
@@ -271,6 +314,7 @@
 					// Display observation points
 					addMarkers(map, locations);
 				}
+
 				// Get user's location
 				function getUserLocation() {
 					if (navigator.geolocation) {
@@ -279,12 +323,14 @@
 						alert("Geolocation is not supported by this browser.");
 					}
 				}
+
 				// Focus map to user's location
 				function showPosition(position) {
 					var lat = position.coords.latitude;
 					var lng = position.coords.longitude;
 					map.setCenter(new google.maps.LatLng(lat, lng));
 				}
+
 				// Load all forecast/observation location points into an array and load to map
 				function addMarkers(map, locations) {
 					for (var i = 0; i < locations.length; i++) {
@@ -301,10 +347,12 @@
 							// icon: icon,
 							map: map,
 							title: loc[0],
+							zoom: 10,
 						});
 					}
 				}
 			</script>
+
 			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&libraries=places&callback=initMap" 
 				async defer></script>
 		</div>
@@ -322,9 +370,55 @@
 
 <!-- bootstrap -->
 <script src="/static/js/bootstrap.js"></script>
+
 <!-- Flask -->
 <script type=text/javascript>
 	var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+
+<!-- Clock -->
+<script>
+	function startTime() {
+		var today = new Date();
+		var zone = today.getTimezoneOffset();
+		var year = today.getFullYear();
+		var month = today.getMonth()+1;
+		var day = today.getDate();
+		var h = today.getHours();
+		var m = today.getMinutes();
+		var s = today.getSeconds();
+		month = checkTime(month);
+		day = checkTime(day);
+		h = checkTime(h);
+		m = checkTime(m);
+		s = checkTime(s);
+		document.getElementById('clock').innerHTML =
+		"<span style=';font-size:8px;'>" + "GMT"+ zone/60 + "</span>" + "<br>" +
+		"<span style='font-weight:bold;'>" + year + "-" + month + "-" + day + " " + h + ":" + m + ":" + s + "</span>";
+		var t = setTimeout(startTime, 500);
+	}
+	function checkTime(i) {
+		if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+		return i;
+	}
+</script>
+
+<!-- Master onload function -->
+<script>
+	function addLoadEvent(func) {
+		var oldonload = window.onload;
+			if (typeof window.onload != 'function') {
+			window.onload = func;
+		} else {
+			window.onload = function() {
+				if (oldonload) {
+					oldonload();
+				}
+				func();
+			}
+		}
+	}
+	addLoadEvent(startTime);
 </script>
 
 </html>
