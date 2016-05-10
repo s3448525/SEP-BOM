@@ -1,0 +1,71 @@
+Deploy Feva via mod_wsgi and Apache
+===================================
+
+There are four main parts to get Feva deployed on Apache.
+* an Apache webserver.
+* mod_wsgi in the version of python that Feva requires.
+* the Feva wsgi script.
+* an Apache configuration to put it all together.
+The last two have been provided with feva.
+
+
+Centos 7 Guide
+--------------
+1) Install the apache webserver if not already installed.
+
+yum install httpd
+
+2) Uninstall mod_wsgi for python2 if it's installed, it's for the wrong version of python and will conflict the python3 mod_wsgi.
+
+yum remove mod_wsgi
+
+3) Install mod_wsgi (for python 3) if not already installed.
+
+# Check if mod_wsgi is installed.
+python3 -c 'import mod_wsgi'
+
+# Install mod_wsgi, httpd-devel is needed to build mod_wsgi.
+yum install httpd-devel
+pip3 install mod_wsgi
+
+# You may need to copy or link the mod_wsgi library to where Apache can load it.
+
+# Check if the library is in Apache's modules directory.
+ls -l /usr/lib64/httpd/modules/mod_wsgi.so
+
+# If it's not there then find where pip installed it and create a symlink to it.
+# Search for the mod_wsgi library.
+find /usr -type f -iname mod_wsgi\*.so
+# Symlink the library into Apache's modules directory, eg:
+ln -sv '/usr/lib64/python3.4/site-packages/mod_wsgi/server/mod_wsgi-py34.cpython-34m.so' /usr/lib64/httpd/modules/mod_wsgi.so
+
+Also add a config which tells apache to load the module.
+Edit /etc/httpd/conf.modules.d/10-wsgi.conf and inside put:
+<IfModule !wsgi_module>
+LoadModule wsgi_module modules/mod_wsgi.so
+</IfModule>
+
+4) Copy Feva's apache config into place.
+
+cp deployment/feva_apache.conf /etc/httpd/conf.d/
+
+# If Feva is installed in a different directory than /opt/feva then you'll need to edit /etc/httpd/conf.d/feva_apache.conf and deployment/feva.wsgi and put in the correct path.
+# e.g. using sed to search and replace.
+set -i -e's|/opt/feva|/path/to/feva|g' /etc/httpd/conf.d/feva_apache.conf
+set -i -e's|/opt/feva|/path/to/feva|g' deployment/feva.wsgi
+
+5) Start the webserver, or restart if it's already running.
+
+# Start the webserver.
+systemctl restart httpd.service
+# Enable the webserver service so that it starts when the computer boots.
+systemctl enable httpd.service
+
+6) Allow connections to the webserver through the firewall.
+
+firewall-cmd --zone=public --add-port=80/tcp
+firewall-cmd --permanent --zone=public --add-port=80/tcp
+
+7) If selinux is enabled then it may block TCP connections to the DB from Apache. By default there is an option to fix this.
+
+setsebool -P httpd_can_network_connect_db 1 

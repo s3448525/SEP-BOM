@@ -8,5 +8,5 @@
 #
 
 echo "Becoming root user to install system components..."
-su -c './install_deps-centos7.sh && ./install_db.sh && ./install_cronjobs.sh' root
-./install_feva_config.sh
+su -c './deployment/install_deps-centos7.sh && ./deployment/install_db.sh && ./deployment/install_cronjobs.sh' root
+./deployment/install_feva_config.sh

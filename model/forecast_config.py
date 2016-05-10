@@ -76,8 +76,8 @@ configs.append({
     'creation_time_func': adfd_creation_time,
     'sub_prev': False,
     'gzip': True,
-    'user': 'bom054',
-    'passwd': 'leadEr6g'
+    'user': '',
+    'passwd': ''
 })
 
 
