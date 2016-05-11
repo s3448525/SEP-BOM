@@ -45,7 +45,7 @@
 				<option value="humidity">Humidity</option>
 			</select>
 			<input type="text" name="daterange" id="date-range-picker" >
-			
+
 			<script type=text/javascript>
 				var startDate = new Date(new Date().setDate(new Date().getDate()-7));
 				var endDate = new Date;	// Today
@@ -79,9 +79,8 @@
 						lat = $('input[name="input_location_coord"]').val().split(",")[0],
 						lon = $('input[name="input_location_coord"]').val().split(",")[1],
 						location = $('input[name="input_location"]').val(),
-						time = endDate.toISOString().substring(0, 10) + "T08:00:00.0Z",
+						time = endDate.toISOString(),
 						max_dist = 10000; // meters
-
 					// alert() is only for debug 
 					if (location == '' || location == null) {
 						alert("Please select a location");
@@ -97,7 +96,10 @@
 
 					// Update location name label
 					document.getElementById("location-name-label").innerHTML = 
-						$('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1]
+						$('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1];
+
+					// Display data table if hidden
+					$('#data-table').collapse("show");
 
 					// Clear previous content
 					var data_table = document.getElementById("data-table");
@@ -143,13 +145,14 @@
 							var unit = "";
 							switch (data_type) {
 								case "rain":
-									unit = "mm";
+									fc_unit = "%";
+									ob_unit = "mm";
 									break;
 								case "temperature":
-									unit = "°C";
+									ob_unit = "°C";
 									break;
 								case "wind_speed":
-									unit = "km/h"
+									ob_unit = "km/h"
 									break;
 								default:
 									break;
@@ -165,15 +168,15 @@
 														data.data[i].observation.location[0],
 														data.data[i].observation.location[1]];
 							}
-							forecast_value_average = parseInt(forecast_value_average / data.data.length);
-							observation_value_average = parseInt(observation_value_average / data.data.length);
+							forecast_value_average = (forecast_value_average / data.data.length).toFixed(2);
+							observation_value_average = (observation_value_average / data.data.length).toFixed(2);
 							//addMarkers(map, observation_points);
 							// Display valid data
 							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
 								"<td>" + data.data[0].observation.time.substring(0, 10) + "</td>" + 
-								"<td>" + forecast_value_average.toString() + unit + "</td>" +
-								"<td>" + observation_value_average.toString() + unit + "</td>" +
-								"<td>" + (forecast_value_average - observation_value_average) + "</td>";
+								"<td>" + forecast_value_average.toString() + fc_unit + "</td>" +
+								"<td>" + observation_value_average.toString() + ob_unit + "</td>" +
+								"<td>" + data.data[0].accuracy + "</td>";
 						} else {
 							// Display error
 							console.log(data);
@@ -191,7 +194,7 @@
 
 	<div class="row" id="main-content-wrapper">
 		<!-- This is where main content goes, a giant table of data and an interactive map -->
-		<div class="col-md-4" id="data-table-wrapper">
+		<div class="col-md-4" id="sidebar-wrapper">
 			<div class="sidebar-sections" id="location-data">
 				<a class="show-hide-button" data-toggle="collapse" data-target="#data-table">
 					<span id="location-name-label">no evaluation result</span>
@@ -204,7 +207,7 @@
 						<td>Date</td>
 						<td>Forecast</td>
 						<td>Actual</td>
-						<td>Δ</td>
+						<td>Accu.</td>
 					</tr>
 					<!--content row(s)-->
 					<tr>
@@ -217,28 +220,41 @@
 			</div>
 
 			<div class="sidebar-sections" id="settings">
-				<a class="show-hide-button" data-toggle="collapse" data-target="">
-					<span>Settings</span>
+				<a class="show-hide-button" data-toggle="collapse" data-target="#settings-form">
+					<span>settings</span>
 					<span class="glyphicon glyphicon-cog"></span>
 				</a>
-				<form>
+				<form id="settings-form" class="collapse">
 					<span class="settings-label">Forecast Source: 
-						<input class="settings-input" type="text"></input>
+						<input class="settings-input" type="text" value="BOM"></input>
 					</span>
 					<span class="settings-label">Observation Source:
-						<input class="settings-input" type="text"></input>
+						<input class="settings-input" type="text" value="BOM"></input>
 					</span>
-					<span class="settings-label">Radius: 
-					<input class="settings-input" type="text"></input>
+					<span class="settings-label">Search Radius: 
+					<input class="settings-input" type="text" value="10000"></input>
 					</span>
 				</form>
 			</div>
 
 			<div class="sidebar-sections">
-				<a class="show-hide-button" data-toggle="collapse" data-target="">
+				<a class="show-hide-button" data-toggle="collapse" data-target="#foo-div">
 					<span>foo</span>
 					<span class="glyphicon"></span>
 				</a>
+				<div id="foo-div" class="collapse">
+					<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce cursus felis a lorem posuere molestie at eget purus. Ut eu varius risus, ac molestie ligula. Donec eget purus varius nulla fringilla porta eu eu nisi. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Ut nec posuere felis. Aliquam quis mollis orci, pellentesque ullamcorper eros. Cras tincidunt ultricies laoreet. Etiam interdum facilisis lacus quis ultrices. Duis sagittis ligula vel suscipit placerat.</p>
+				</div>
+			</div>
+
+			<div class="sidebar-sections">
+				<a class="show-hide-button" data-toggle="collapse" data-target="#bar-div">
+					<span>bar</span>
+					<span class="glyphicon"></span>
+				</a>
+				<div id="bar-div" class="collapse">
+					<p>Morbi massa quam, varius sagittis sem sit amet, mollis placerat mauris. In et tincidunt dui. In eget dictum dui. Curabitur interdum urna vitae justo placerat, eu eleifend arcu sagittis. Sed tempor fermentum massa, pulvinar ornare dui eleifend at. Cras faucibus elit nulla, et placerat orci posuere sit amet. Nullam dictum vulputate aliquam. Proin vel odio purus.</p>
+				</div>
 			</div>
 		</div>
 
@@ -393,7 +409,7 @@
 		m = checkTime(m);
 		s = checkTime(s);
 		document.getElementById('clock').innerHTML =
-		"<span style=';font-size:8px;'>" + "GMT"+ zone/60 + "</span>" + "<br>" +
+		"<span style=';font-size:9px;'>" + "GMT"+ zone/60 + "</span>" + "<br>" +
 		"<span style='font-weight:bold;'>" + year + "-" + month + "-" + day + " " + h + ":" + m + ":" + s + "</span>";
 		var t = setTimeout(startTime, 500);
 	}

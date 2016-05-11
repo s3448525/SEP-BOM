@@ -55,7 +55,6 @@ a:hover, a:focus {
 
 #search-bar-wrapper {
   height: 30px;
-  background-color: rgba(95, 158, 160, 0.75);
   padding-top: 3px;
   position: relative;
   background-color: #49ACF2;
@@ -68,30 +67,34 @@ a:hover, a:focus {
 }
 
 #main-content-wrapper {
-  /*height: 100%;*/
   top: 0px;
   bottom: 0px;
   position: relative;
   
 }
 
-#map-wrapper, #data-table-wrapper {
+#map-wrapper, #sidebar-wrapper {
   padding: 0;
   margin: 0;
   height: 80%;
 }
 
-#data-table-wrapper {
+#sidebar-wrapper {
   height:100%;
   width: 350px;
   position: fixed;
   background-color: #E0E0E0;
   z-index: 500;
   box-shadow: 3px 0px 10px #888888;
+  overflow: scroll;
 }
 
 .sidebar-sections:nth-child(1) {
   margin-top: 5px;
+}
+
+.sidebar-sections:last-child {
+  margin-bottom: 100px;
 }
 
 .sidebar-sections {
@@ -100,12 +103,16 @@ a:hover, a:focus {
   background: rgba(0, 0, 0, 0.1);
 }
 
-#data-table-wrapper .glyphicon {
+#sidebar-wrapper .glyphicon {
   float: right;
 }
 
-#settings {
+#settings-form {
   height: 300px;
+}
+
+#foo-div, #bar-div {
+  min-height: 300px;
 }
 
 .settings-label {
@@ -134,21 +141,18 @@ a:hover, a:focus {
 }
 
 #data-table {
-  background: rgba(0, 0, 0, .3);
   color: #000000;
-  /*padding: 5px;*/
 }
 
 #data-table tbody {
   width: 100%;
   display: inline-table;
   padding: 0;
-  background: rgb(165, 165, 165);
 }
 
 #data-table #data-table-title-row {
-  /*height: 100%;*/
   background: rgb(100, 100, 100);
+  background: rgba(73, 172, 242, 0.6);
 }
 
 #data-table tr {
@@ -164,7 +168,7 @@ a:hover, a:focus {
 }
 
 #data-table tr:nth-child(odd) {
-  background: rgba(0, 0, 0, .25);
+  background: rgba(0, 0, 0, .1);
 }
 
 #map-wrapper {
@@ -176,7 +180,6 @@ a:hover, a:focus {
 }
 
 #map {
-  /*min-height: 600px;*/
   height: 100%;
   width: 100%;
 }
@@ -186,13 +189,12 @@ a:hover, a:focus {
   position: fixed;
   bottom: 0;
   left: 0;
+  padding-top: 2px;
   width: 350px;
-  background: rgba(0, 0, 0, .5);
+  background: rgb(73, 172, 242);
   color: rgba(0, 0, 0, 1);
   z-index: 600;
   font-size: 12px;
-  align-content: center;
-  vertical-align: center;
 }
 
 .search-bar-label {

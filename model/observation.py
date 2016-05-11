@@ -1,4 +1,5 @@
 from model.helpers.distance import GISPoint, Distance, Within, AsLatLon, decode_point
+from model.helpers import validator
 from model.fetch_observation import fetch_observation
 from model.schema import RainfallObservation
 from psycopg2.extras import DateTimeRange
@@ -6,11 +7,22 @@ import datetime
 
 class ObservationManager(object):
 
+    EVALUATE_SCHEMA = {
+        validator.Required('longitude'): validator.Longitude(),
+        validator.Required('latitude'): validator.Latitude(),
+        validator.Optional('start_time', default=None): validator.Datetime(),
+        validator.Optional('end_time', default=None): validator.Datetime(),
+        validator.Optional('weather_type', default='rain'): validator.Coerce(str),
+        validator.Optional('max_distance', default=1000): validator.Coerce(int),
+        validator.Optional('limit', default=10): validator.Coerce(int)
+    }
+
     def __init__(self, db):
         self.db = db
 
     def api_get_observations_near(self, params):
-        return self.get_observations_near(None, None)
+        params = validator.validate(self.EVALUATE_SCHEMA, params)
+        return self.get_observations_near(**params)
 
     def get_observations_near(self, longitude, latitude, start_time=None, end_time=None, weather_type='rain', max_distance=1000, limit=10):
         """

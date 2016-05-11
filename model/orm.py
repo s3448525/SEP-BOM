@@ -15,14 +15,12 @@ class ORM(object):
         # see http://flask.pocoo.org/docs/0.10/patterns/sqlalchemy/
         self.session = scoped_session(self.session_factory)
 
-    @contextmanager
     def shutdown_session(self):
         '''
         Shutdown the session inside the scoped_session registry.
         Usefull at the end of a webserver request.
         '''
         self.session.remove()
-        self.session.close()
 
     @contextmanager
     def transaction_session(self):

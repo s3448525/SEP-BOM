@@ -89,5 +89,5 @@ class RainfallObservation(Base):
             'time': self.time,
             'location': unpack_wkb_point(self.location),
             'value': float(self.value),
-            'source': self.time
+            'source': self.source
         }
