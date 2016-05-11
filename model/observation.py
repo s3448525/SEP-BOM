@@ -4,6 +4,7 @@ from model.fetch_observation import fetch_observation
 from model.schema import RainfallObservation
 from psycopg2.extras import DateTimeRange
 import datetime
+import logging
 
 class ObservationManager(object):
 
@@ -74,3 +75,17 @@ class ObservationManager(object):
             # Commit remaining uncommitted observations.
             session.commit()
         return obs_count
+
+    def delete_old(self, time):
+        '''
+        Delete observations older than the specified datetime.
+        Returns the number of deleted observations.
+        '''
+        log = logging.getLogger(__name__)
+        with self.db.transaction_session() as session:
+            deleted_count = session.query(RainfallObservation)\
+                .filter(RainfallObservation.time < time)\
+                .delete()
+            session.commit()
+        log.debug('Deleted {} observations older than {}.'.format(str(deleted_count), str(time)))
+        return deleted_count
