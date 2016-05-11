@@ -5,6 +5,7 @@ from model.schema import ForecastValue
 from psycopg2.extras import DateTimeRange
 import datetime
 from math import isnan
+import logging
 
 
 class ForecastManager(object):
@@ -75,3 +76,27 @@ class ForecastManager(object):
         for result in results:
             forecasts.append((result[0], result[1]))
         return forecasts
+
+    def delete_old(self, time):
+        '''
+        Delete forecasts older than the specified datetime.
+        Returns the number of deleted forecasts.
+        '''
+        log = logging.getLogger(__name__)
+        deleted_count = 0
+        with self.db.transaction_session() as session:
+            # Get a list of forecasts older than the threshold time.
+            old_forecasts = session.query(Forecast)\
+                .filter(Forecast.creation_date < time)\
+                .all()
+            # Delete each forecast.
+            for fc in old_forecasts:
+                # Delete the forecasts values.
+                session.query(ForecastValue)\
+                    .filter(ForecastValue.id_forecast == fc.id)\
+                    .delete()
+                # Delete the forecast.
+                session.delete(fc)
+                session.commit()
+                deleted_count += 1
+        log.debug('Deleted {} forecasts older than {}.'.format(str(deleted_count), str(time)))
