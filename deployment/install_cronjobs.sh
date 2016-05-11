@@ -49,3 +49,14 @@ else
     echo "load_forecast job already installed."
 fi
 
+# Append delete_old_observation job if not already in the crontab.
+if ! (crontab -u "$feva_user" -l | grep -F -q 'model.delete_old_observation'); then
+    echo "Appending delete_old_observation job."
+    (
+        crontab -u "$feva_user" -l;
+        echo 'MAILTO=""';
+        echo "0 0 * * *  PYTHONPATH='$feva_path' python3 -m model.delete_old_observation"
+    ) | crontab -u "$feva_user" -
+else
+    echo "delete_old_observation job already installed."
+fi
