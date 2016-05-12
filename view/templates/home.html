@@ -123,13 +123,13 @@
 				// Send API calls
 				function makeAPICalls(data_type, lat, lon, max_dist, time, callback){
 					// Send search request
-					// console.log(data_type, lat, lon, max_dist, time);
+					console.log(data_type, lat, lon, max_dist, time);
 					var temp = $.getJSON($SCRIPT_ROOT + 'api/evaluate', {
 						weather_type: data_type,
 						latitude: lat,
 						longitude: lon,
 						max_distance: max_dist,
-						time: time.toISOString().substring(0, 10) + "T08\:00\:00\.0Z"
+						time: time.toISOString()//.substring(0, 10) + "T04\:00\:00\.0Z"
 					}, function(data) {
 						callback(data);
 					});
@@ -138,21 +138,23 @@
 				// Display returned API data and populate the data table
 				function displayData(data_type, lat, lon, max_dist, time, row_number){
 					//get our JSON
-					console.log(data_type, lat, lon, max_dist, time, row_number);
 					makeAPICalls(data_type, lat, lon, max_dist, time, function(data){
 						//when we get our data, evaluate
+						// console.log(time);
 						if (data.success == true){
-							var unit = "";
+							var fc_unit = "", ob_unit = "";
 							switch (data_type) {
 								case "rain":
 									fc_unit = "%";
 									ob_unit = "mm";
 									break;
 								case "temperature":
+									fc_unit = "°C";
 									ob_unit = "°C";
 									break;
 								case "wind_speed":
-									ob_unit = "km/h"
+									fc_unit = "km/h";
+									ob_unit = "km/h";
 									break;
 								default:
 									break;
@@ -170,18 +172,24 @@
 							}
 							forecast_value_average = (forecast_value_average / data.data.length).toFixed(2);
 							observation_value_average = (observation_value_average / data.data.length).toFixed(2);
+							accuracy = "-"
+							if (data.data[0].accuracy == true) { 
+								accuracy = "<span style='color:#00FA00;'>✔</span>" ;
+							} else {
+								accuracy = "<span style='color:#FA0000;'>✘</span>";
+							}
 							//addMarkers(map, observation_points);
 							// Display valid data
 							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
-								"<td>" + data.data[0].observation.time.substring(0, 10) + "</td>" + 
+								"<td>" + data.data[0].observation.time.substring(5, 10) + "</td>" + 
 								"<td>" + forecast_value_average.toString() + fc_unit + "</td>" +
 								"<td>" + observation_value_average.toString() + ob_unit + "</td>" +
-								"<td>" + data.data[0].accuracy + "</td>";
+								"<td>" + accuracy + "</td>";
 						} else {
 							// Display error
 							console.log(data);
 							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
-								"<td>" + time.toISOString().substring(0, 10) + "</td>" +
+								"<td>" + time.toISOString().substring(5, 10) + "</td>" +
 								"<td>" + "no data" + "</td>" +
 								"<td>" + "no data" + "</td>" +
 								"<td>" + "-" + "</td>";
@@ -249,12 +257,51 @@
 
 			<div class="sidebar-sections">
 				<a class="show-hide-button" data-toggle="collapse" data-target="#bar-div">
-					<span>bar</span>
-					<span class="glyphicon"></span>
+					<span>status</span>
+					<span class="glyphicon glyphicon-stats"></span>
 				</a>
-				<div id="bar-div" class="collapse">
-					<p>Morbi massa quam, varius sagittis sem sit amet, mollis placerat mauris. In et tincidunt dui. In eget dictum dui. Curabitur interdum urna vitae justo placerat, eu eleifend arcu sagittis. Sed tempor fermentum massa, pulvinar ornare dui eleifend at. Cras faucibus elit nulla, et placerat orci posuere sit amet. Nullam dictum vulputate aliquam. Proin vel odio purus.</p>
+				<div id="bar-div" class="collapse in">
+					<form>
+						<label>Current Observation Points:</label>
+						<label id="obs_count"></label>
+					</form>
 				</div>
+				<script>
+					// Make API call to get 
+					function getObservations(lat, lon, max_dist, callback){
+						// Send search request
+						var temp = $.getJSON('http://feva.ddns.net:8080/api/locations/observations', {
+							latitude: lat,
+							longitude: lon,
+							max_distance: max_dist,
+							limit: 99999999
+						}, function(data) {
+							callback(data);
+						});
+					}
+					// Display return number of observation points
+					function displayNumObs(lat, lon, max_dist){
+						//get our JSON
+						getObservations(lat, lon, max_dist, function(data) {
+							if (data.success == true) {
+								var raw_data = data.data,
+									uniq_locations = [];
+								$.each(raw_data, function (index, value) {
+									if($.inArray(value.location, uniq_locations) == -1) {
+										uniq_locations.push(value.location);
+									}
+								});
+								$.each(uniq_locations, function (index, value) {
+									uniq_locations[index].splice(0, 0, " ");
+								});
+								addMarkers(map, uniq_locations);
+								console.log("current number of observation points: " + uniq_locations.length);
+								document.getElementById("obs_count").innerHTML = uniq_locations.length;
+							}
+						})
+					}
+					displayNumObs(-37.8095, 144.964, 600000);
+				</script>
 			</div>
 		</div>
 
@@ -351,16 +398,17 @@
 				function addMarkers(map, locations) {
 					for (var i = 0; i < locations.length; i++) {
 						var loc = locations[i];
-						var icon = {
-							url: "../static/images/weather-radar-512.png",
-							size: new google.maps.Size(31, 71),
-							origin: new google.maps.Point(0, 0),
-							anchor: new google.maps.Point(17, 34),
-							scaledSize: new google.maps.Size(11, 25)
+						var redCircle ={
+							path: google.maps.SymbolPath.CIRCLE,
+							fillColor: 'red',
+							fillOpacity: .4,
+							scale: 4.5,
+							strokeColor: 'white',
+							strokeWeight: 1
 						};
 						var marker = new google.maps.Marker({
 							position: {lat: loc[1], lng: loc[2]},
-							// icon: icon,
+							icon: redCircle,
 							map: map,
 							title: loc[0],
 							zoom: 10,

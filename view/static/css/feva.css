@@ -108,11 +108,11 @@ a:hover, a:focus {
 }
 
 #settings-form {
-  height: 300px;
+  /*height: 300px;*/
 }
 
 #foo-div, #bar-div {
-  min-height: 300px;
+  /*min-height: 300px;*/
 }
 
 .settings-label {
