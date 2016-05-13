@@ -159,7 +159,7 @@
 								default:
 									break;
 							}
-							console.log(data);
+							// console.log(data);
 							// Get returned data average
 							var observation_points = [];
 							var forecast_value_average = 0, observation_value_average = 0;
@@ -182,8 +182,8 @@
 							// Display valid data
 							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
 								"<td>" + data.data[0].observation.time.substring(5, 10) + "</td>" + 
-								"<td>" + forecast_value_average.toString() + fc_unit + "</td>" +
-								"<td>" + observation_value_average.toString() + ob_unit + "</td>" +
+								"<td>" + data.data[0].forecast.value.toString() + fc_unit + "</td>" +
+								"<td>" + data.data[0].observation.value.toString() + ob_unit + "</td>" +
 								"<td>" + accuracy + "</td>";
 						} else {
 							// Display error
@@ -285,17 +285,21 @@
 						getObservations(lat, lon, max_dist, function(data) {
 							if (data.success == true) {
 								var raw_data = data.data,
-									uniq_locations = [];
+									uniq_locations = new Set();
+
 								$.each(raw_data, function (index, value) {
-									if($.inArray(value.location, uniq_locations) == -1) {
-										uniq_locations.push(value.location);
+									if (uniq_locations.has(value) == false) {
+										uniq_locations.add(value.location);
 									}
 								});
+
+								uniq_locations = Array.from(uniq_locations);
 								$.each(uniq_locations, function (index, value) {
-									uniq_locations[index].splice(0, 0, " ");
+									uniq_locations[index].splice(0, 0, raw_data[index].value.toString());
 								});
+
 								addMarkers(map, uniq_locations);
-								console.log("current number of observation points: " + uniq_locations.length);
+								// console.log("current number of observation points: " + uniq_locations.length);
 								document.getElementById("obs_count").innerHTML = uniq_locations.length;
 							}
 						})
@@ -398,6 +402,7 @@
 				function addMarkers(map, locations) {
 					for (var i = 0; i < locations.length; i++) {
 						var loc = locations[i];
+						// console.log(loc);
 						var redCircle ={
 							path: google.maps.SymbolPath.CIRCLE,
 							fillColor: 'red',

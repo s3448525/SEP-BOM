@@ -1,4 +1,5 @@
 from model.helpers.distance import GISPoint, Distance, Within, AsLatLon, decode_point
+from model.helpers import validator
 import model.fetch_forecast
 from model.schema import Forecast
 from model.schema import ForecastValue
@@ -9,6 +10,14 @@ import logging
 
 
 class ForecastManager(object):
+
+    EVALUATE_SCHEMA = {
+        validator.Required('longitude'): validator.Longitude(),
+        validator.Required('latitude'): validator.Latitude(),
+        validator.Optional('forecast_date', default=None): validator.Datetime(),
+        validator.Optional('max_distance', default=1000): validator.Coerce(int),
+        validator.Optional('limit', default=10): validator.Coerce(int)
+    }
 
     def __init__(self, db):
         self.db = db
@@ -52,6 +61,10 @@ class ForecastManager(object):
                     # Try flushing the values into the DB to reduce ram usage.
                     session.commit()
                     i += 1
+
+    def api_get_forecasts_near(self, params):
+        params = validator.validate(self.EVALUATE_SCHEMA, params)
+        return self.get_forecasts_near(**params)
 
     def get_forecasts_near(self, longitude, latitude, forecast_date=None, max_distance=1000, limit=5):
         """
