@@ -27,7 +27,7 @@ if __name__ == '__main__':
     print('Observations Sample')
     i = 0
     for obs in fetch_observation():
-        print(obs.time, obs.weather_type, obs.value, obs.location.desc)
+        print(obs.time, obs.value, obs.location.desc, obs.source)
         i += 1
         if i > 10:
             break
