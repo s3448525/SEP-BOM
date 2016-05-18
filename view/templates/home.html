@@ -181,15 +181,16 @@
 							//addMarkers(map, observation_points);
 							// Display valid data
 							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
-								"<td>" + data.data[0].observation.time.substring(5, 10) + "</td>" + 
+								"<td>" + new Date(time).toString().substring(4, 10) + "</td>" + 
 								"<td>" + data.data[0].forecast.value.toString() + fc_unit + "</td>" +
 								"<td>" + data.data[0].observation.value.toString() + ob_unit + "</td>" +
 								"<td>" + accuracy + "</td>";
 						} else {
 							// Display error
 							console.log(data);
+							// console.log(new Date(time).toString().substring(0, 10));
 							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
-								"<td>" + time.toISOString().substring(5, 10) + "</td>" +
+								"<td>" + new Date(time).toString().substring(4, 10) + "</td>" +
 								"<td>" + "no data" + "</td>" +
 								"<td>" + "no data" + "</td>" +
 								"<td>" + "-" + "</td>";
