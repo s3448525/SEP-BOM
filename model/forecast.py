@@ -66,28 +66,46 @@ class ForecastManager(object):
         params = validator.validate(self.EVALUATE_SCHEMA, params)
         return self.get_forecasts_near(**params)
 
-    def get_forecasts_near(self, longitude, latitude, forecast_date=None, max_distance=1000, limit=5):
+    def get_forecasts_near(self, longitude, latitude, forecast_date=None, max_distance=5000, limit=50):
         """
+        Get forecasts near the given location. Only the closest forecast
+        point for each forecast is returned.
+
         :param longitude:
         :param latitude:
-        :param max_distance: The max_distance (in meters) of the bounds
-        :param limit: How many records to return (sorted by max_distance)
-        :return: A list of locations (as a dict) near a given coordinate.
+        :param forecast_date: an optional Datetime that the forecast must
+            cover. Defaults to the current time.
+        :param max_distance: The max_distance (in meters) of the bounds.
+        :param limit: Limit the number of returned forecasts.
+        :return: A list of (ForecastValue, Forecast, distance) tuples. The
+            distance is from the given location to the ForecastValue location.
         """
         if forecast_date is None:
             forecast_date = datetime.datetime.utcnow()
 
+        # Select only the closest ForecastValue for each forecast.
         point = GISPoint(longitude, latitude)
-        results = self.db.session.query(ForecastValue, Forecast)\
+        results = self.db.session.query(ForecastValue, Forecast,
+                Distance(ForecastValue.location, point))\
             .filter(Within(ForecastValue.location, point, max_distance),
                     Forecast.date_range.contains(forecast_date))\
             .filter(ForecastValue.id_forecast == Forecast.id)\
             .order_by(Distance(ForecastValue.location, point))\
             .limit(limit)\
             .all()
+
         forecasts = []
+        dedup_ids = set()
         for result in results:
-            forecasts.append((result[0], result[1]))
+            # Skip if another ForecastValue has already been chosen for this
+            # Forecast.
+            #TODO this deduplicating could probably happen in the SQL query.
+            if result[1].id in dedup_ids:
+                continue
+            # Found closest ForecastValue for this Forecast.
+            dedup_ids.add(result[1].id)
+            forecasts.append((result[0], result[1], result[2]))
+
         return forecasts
 
     def delete_old(self, time):
