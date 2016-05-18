@@ -107,18 +107,11 @@ a:hover, a:focus {
   float: right;
 }
 
-#settings-form {
-  /*height: 300px;*/
-}
-
-#foo-div, #bar-div {
-  /*min-height: 300px;*/
-}
-
 .settings-label {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   margin-left: 10px;
   width: 100%;
+  font-weight: normal;
 }
 
 .settings-input {
