@@ -4,16 +4,11 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="initial-scale=1.0">
-	<!-- jQuery -->
-	<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
-	<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<!-- Bootstrap. Change to min for production -->
 	<link rel="stylesheet" href="/static/css/bootstrap.css" />
 	<link rel="stylesheet" href="/static/css/bootstrap-theme.css" />
 	<!-- Date Range Picker -->
-	<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-	<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+
 	<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 	<!-- Override bootstrap with custom css -->
 	<link rel="stylesheet" href="/static/css/feva.css" />
@@ -46,158 +41,10 @@
 			</select>
 			<input type="text" name="daterange" id="date-range-picker" >
 
-			<script type=text/javascript>
-				var startDate = new Date(new Date().setDate(new Date().getDate()-7));
-				var endDate = new Date;	// Today
-				// Configure date range picker
-				$('input[name="daterange"]').daterangepicker(
-				{
-					locale: {
-						format: 'YYYY-MM-DD'
-					},
-					"dateLimit": {
-						"days": 7
-					},
-					startDate: startDate,
-					endDate: endDate
-				}, function(start, end, label) {
-					console.log("A new date range was chosen: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
-					startDate = new Date(start.format('YYYY-MM-DD'));
-					endDate = new Date(end.format('YYYY-MM-DD'));
-				});
-			</script>
 			<!-- <label class="search-bar-label">Location:</label> -->
 			<input type="text" name="input_location" id="search-box" placeholder="Search for place">
 			<input type="text" name="input_location_coord" id="location-coord-box" value="">
-			<button id="button-search" onclick="search()">Search</button>
-			<!-- Search button action script -->
-			<script type=text/javascript>
-				function search() {
-					// Feva API call to retrieve JSON object
-					var e = document.getElementById("select-data-type"),
-						data_type = e.options[e.selectedIndex].value,
-						lat = $('input[name="input_location_coord"]').val().split(",")[0],
-						lon = $('input[name="input_location_coord"]').val().split(",")[1],
-						location = $('input[name="input_location"]').val(),
-						time = endDate.toISOString(),
-						max_dist = 10000; // meters
-					// alert() is only for debug 
-					if (location == '' || location == null) {
-						alert("Please select a location");
-						return;
-					} else {
-						alert("Latitude: " + lat + "\n" +
-								"Longitude: " + lon + "\n" +
-								"Type: " + data_type + "\n" +
-								"Max Distance: " + max_dist + "\n" +
-								"Time: " + time
-						);
-					}
-
-					// Update location name label
-					document.getElementById("location-name-label").innerHTML = 
-						$('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1];
-
-					// Display data table if hidden
-					$('#data-table').collapse("show");
-
-					// Clear previous content
-					var data_table = document.getElementById("data-table");
-					for (i = 1; data_table.rows.length - i > 0; ) {
-						data_table.deleteRow(data_table.rows.length - i);
-					}
-
-					// Calculate how many days of data to lookup
-					var time_span =  Math.ceil(Math.abs(endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
-					for (i = 1; i <= time_span; i++) {
-						tr = data_table.insertRow(i);
-						tr.id = "data-table-content-row-"+i;
-					}
-
-					// Initiate requests for each day
-					for (i = 0; i < time_span; i++) {
-						time = new Date((new Date).setDate(endDate.getDate()-i));
-						displayData(data_type, lat, lon, max_dist, time, i+1);
-					}
-				}
-				// Send API calls
-				function makeAPICalls(data_type, lat, lon, max_dist, time, callback){
-					// Send search request
-					console.log(data_type, lat, lon, max_dist, time);
-					var temp = $.getJSON($SCRIPT_ROOT + 'api/evaluate', {
-						weather_type: data_type,
-						latitude: lat,
-						longitude: lon,
-						max_distance: max_dist,
-						time: time.toISOString()//.substring(0, 10) + "T04\:00\:00\.0Z"
-					}, function(data) {
-						callback(data);
-					});
-				}
-
-				// Display returned API data and populate the data table
-				function displayData(data_type, lat, lon, max_dist, time, row_number){
-					//get our JSON
-					makeAPICalls(data_type, lat, lon, max_dist, time, function(data){
-						//when we get our data, evaluate
-						// console.log(time);
-						if (data.success == true){
-							var fc_unit = "", ob_unit = "";
-							switch (data_type) {
-								case "rain":
-									fc_unit = "%";
-									ob_unit = "mm";
-									break;
-								case "temperature":
-									fc_unit = "°C";
-									ob_unit = "°C";
-									break;
-								case "wind_speed":
-									fc_unit = "km/h";
-									ob_unit = "km/h";
-									break;
-								default:
-									break;
-							}
-							console.log(data);
-							// Get returned data average
-							var observation_points = [];
-							var forecast_value_average = 0, observation_value_average = 0;
-							for (i = 0; i < data.data.length; i++) {
-								forecast_value_average += data.data[i].forecast.value;
-								observation_value_average += data.data[i].observation.value;
-								observation_points[i] = [data.data[i].observation.value.toString(),
-														data.data[i].observation.location[0],
-														data.data[i].observation.location[1]];
-							}
-							forecast_value_average = (forecast_value_average / data.data.length).toFixed(2);
-							observation_value_average = (observation_value_average / data.data.length).toFixed(2);
-							accuracy = "-"
-							if (data.data[0].accuracy == true) { 
-								accuracy = "<span style='color:#00FA00;'>✔</span>" ;
-							} else {
-								accuracy = "<span style='color:#FA0000;'>✘</span>";
-							}
-							//addMarkers(map, observation_points);
-							// Display valid data
-							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
-								"<td>" + new Date(time).toString().substring(4, 10) + "</td>" + 
-								"<td>" + data.data[0].forecast.value.toString() + fc_unit + "</td>" +
-								"<td>" + data.data[0].observation.value.toString() + ob_unit + "</td>" +
-								"<td>" + accuracy + "</td>";
-						} else {
-							// Display error
-							console.log(data);
-							// console.log(new Date(time).toString().substring(0, 10));
-							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
-								"<td>" + new Date(time).toString().substring(4, 10) + "</td>" +
-								"<td>" + "no data" + "</td>" +
-								"<td>" + "no data" + "</td>" +
-								"<td>" + "-" + "</td>";
-						}
-					});
-				}
-			</script>
+			<button id="button-search">Search</button>
 		</div>
 	</div>
 
@@ -246,13 +93,13 @@
 				</a>
 				<form id="settings-form" class="collapse in">
 					<label class="settings-label">Forecast Source: 
-						<input class="settings-input" id="forecast source" type="text" value="BOM"></input>
+						<input class="settings-input" id="forecast source" type="text" value="BOM"/>
 					</label>
 					<label class="settings-label">Observation Source:
-						<input class="settings-input" id="observation-source" type="text" value="WOW"></input>
+						<input class="settings-input" id="observation-source" type="text" value="WOW"/>
 					</label>
 					<label class="settings-label">Search Radius (meters): 
-						<input class="settings-input" id="search-radius" type="text" value="0"></input>
+						<input class="settings-input" id="search-radius" type="text" value="0"/>
 					</label>
 				</form>
 			</div>
@@ -267,233 +114,13 @@
 						<span id="obs_count"></span>
 					</label>
 				</form>
-				<script>
-					var max_distance = document.getElementById('search-radius').value;
-					// Make API call to get 
-					function getObservations(lat, lon, max_dist, callback){
-						// Send search request
-						var temp = $.getJSON($SCRIPT_ROOT + '/api/locations/observations', {
-							latitude: lat,
-							longitude: lon,
-							max_distance: max_dist,
-							limit: 99999999 
-						}, function(data) {
-							callback(data);
-						});
-					}
-					// Display return number of observation points
-					function displayNumObs(lat, lon, max_dist){
-						//get our JSON
-						getObservations(lat, lon, max_dist, function(data) {
-							if (data.success == true) {
-								var raw_data = data.data,
-									uniq_locations = new Set(),
-									uniq_locations_string = [];
-
-								$.each(raw_data, function (index, value) {
-									coord = value.location[0].toString() + "," + value.location[1].toString();
-									if ($.inArray(coord, uniq_locations_string) == -1) {
-										uniq_locations.add(value.location);
-										uniq_locations_string.push(coord);
-									}
-								});
-
-								uniq_locations = Array.from(uniq_locations);
-								observation_locations = [];
-								$.each(uniq_locations, function (index, value) {
-									uniq_locations[index].splice(0, 0, raw_data[index].value.toString());
-									observation_locations.push(uniq_locations[index]);
-								});
-
-								addMarkers(map, observation_locations);
-								// showMarkers();
-								// console.log("current number of observation points: " + uniq_locations.length);
-								document.getElementById("obs_count").innerHTML = uniq_locations.length;
-							}
-						})
-					}
-				</script>
 			</div>
 		</div>
 
 		<div class="col-md-8" id="map-wrapper">
 			<!-- An interactive map -->
 			<div id="map"></div>
-			<!-- Configure map script -->
-			<script>
-				var map, searchBox, geocoder;
-				var locations = [];
-				// var locations = [];
-				// Google maps initialiser
-				function initMap() {
-					map = new google.maps.Map(document.getElementById('map'), {
-						zoom: 8,
-						mapTypeControlOptions: { mapTypeIds: [] },
-						streetViewControl: false,
-						zoomControl: false,
-					});
-
-					searchBox = new google.maps.places.SearchBox(document.getElementById('search-box'));
-
-					// Create the search box and link it to the UI element.
-					var input = document.getElementById('search-box');
-					var searchBox = new google.maps.places.SearchBox(input);
-
-					// Bias the SearchBox results towards current map's viewport.
-					map.addListener('bounds_changed', function() {
-						searchBox.setBounds(map.getBounds());
-					});
-
-					var markers = [];
-					// Listen for the event fired when the user selects a prediction and retrieve
-					// more details for that place.
-					searchBox.addListener('places_changed', function() {
-						var places = searchBox.getPlaces();
-
-						if (places.length == 0) {
-							return;
-						}
-
-						// Save location coordinates for later use
-						document.getElementById('location-coord-box').value = 
-							places[0].geometry.location.lat() + "," + places[0].geometry.location.lng();
-
-						// Clear out the old markers.
-						markers.forEach(function(marker) {
-							marker.setMap(null);
-						});
-						markers = [];
-
-						// For each place, get the icon, name and location.
-						var bounds = new google.maps.LatLngBounds();
-						places.forEach(function(place) {
-							// Create a marker for each place.
-							markers.push(new google.maps.Marker({
-								map: map,
-								title: place.name,
-								position: place.geometry.location
-							}));
-
-							if (place.geometry.viewport) {
-								// Only geocodes have viewport.
-								bounds.union(place.geometry.viewport);
-							} else {
-								bounds.extend(place.geometry.location);
-							}
-						});
-						map.fitBounds(bounds);
-						search();
-					});
-
-					// Listen to bound change
-					google.maps.event.addListener(map, 'bounds_changed', function() {
-						var bounds =  map.getBounds(),
-							ne = bounds.getNorthEast(),
-							sw = bounds.getSouthWest(),
-							center = bounds.getCenter();
-						// Get bound size
-						var r = 6371008,
-							lat1 = center.lat() / 57.2958,
-							lon1 = center.lng() / 57.2958,
-							lat2 = ne.lat() / 57.2958,
-							lon2 = ne.lng() / 57.2958,
-							dis = r * Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1));
-						// Set search radius
-						document.getElementById('search-radius').value = parseInt(dis);
-						displayNumObs(center.lat(), center.lng(), parseInt(dis));
-					});
-
-					// Focus to users location
-					//setUserLocation();
-					map.panTo(new google.maps.LatLng(-37.8095,144.964));
-					// Display observation points
-					// addMarkers(map, locations);
-				}
-
-				// Get user's location
-				function setUserLocation() {
-					if (navigator.geolocation) {
-						navigator.geolocation.getCurrentPosition(showPosition);
-					} else {
-						alert("Geolocation is not supported by this browser.");
-					}
-				}
-
-				// Focus map to user's location
-				function showPosition(position) {
-					var lat = position.coords.latitude;
-					var lng = position.coords.longitude;
-					map.setCenter(new google.maps.LatLng(lat, lng));
-				}
-
-				// Load all forecast/observation location points into an array and load to map
-				function addMarkers(map, location_array) {
-					deleteMarkers();
-					for (var i = 0; i < location_array.length; i++) {
-						var loc = location_array[i];
-						// console.log(loc);
-						var redCircle ={
-							path: google.maps.SymbolPath.CIRCLE,
-							fillColor: 'red',
-							fillOpacity: .5,
-							scale: 4.5,
-							strokeColor: 'white',
-							strokeWeight: 1
-						};
-						var marker = new google.maps.Marker({
-							position: {lat: loc[1], lng: loc[2]},
-							icon: redCircle,
-							map: map,
-							// title: loc[0],
-							// zoom: 10,
-						});
-						locations.push(marker);
-					}
-				}
-
-				// Sets the map on all markers in the array.
-				function setMapOnAll(map) {
-					for (var i = 0; i < locations.length; i++) {
-						locations[i].setMap(map);
-					}
-				}
-
-				// Removes the markers from the map, but keeps them in the array.
-				function clearMarkers() {
-					setMapOnAll(null);
-				}
-
-				// Shows any markers currently in the array.
-				function showMarkers() {
-					setMapOnAll(map);
-				}
-
-				// Deletes all markers in the array by removing references to them.
-				function deleteMarkers() {
-					clearMarkers();
-					locations = [];
-				}
-
-				// Get current bound size
-				function getBoundSize() {
-					var bounds = map.getBounds();
-					console.log(bounds);
-					var center = bounds.getCenter();
-					var ne = bounds.getNorthEast();
-					var r = 6371008;
-					var lat1 = center.lat() / 57.2958; 
-					var lon1 = center.lng() / 57.2958;
-					var lat2 = ne.lat() / 57.2958;
-					var lon2 = ne.lng() / 57.2958;
-					var dis = r * Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1));
-					console.log(dis);
-					return dis;
-				}
-			</script>
-
-			<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&libraries=places&callback=initMap" 
-				async defer></script>
-		</div>
+			</div>
 	</div>
 
 	<div class="row" id="footer-wrapper">
@@ -505,14 +132,30 @@
 	<!-- End of main container -->
 </div>
 </body>
+<!-- jQuery -->
+<script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+<!-- Daterange picker -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+
+<!-- Configure map script -->
+<script src="static/js/map.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1pVcpztI11bnkeOehBiFPIVtAT4io9w&libraries=places&callback=initMap" async defer></script>
+
 
 <!-- bootstrap -->
-<script src="/static/js/bootstrap.js"></script>
+<script src="/static/js/component/bootstrap.js"></script>
 
 <!-- Flask -->
 <script type=text/javascript>
 	var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 </script>
+
+<!-- main app -->
+<script src="static/js/app.js"></script>
 
 <!-- Clock -->
 <script>
@@ -543,6 +186,8 @@
 
 <!-- Master onload function -->
 <script>
+	var app = new Application();
+
 	function addLoadEvent(func) {
 		var oldonload = window.onload;
 			if (typeof window.onload != 'function') {
@@ -557,6 +202,9 @@
 		}
 	}
 	addLoadEvent(startTime);
+	addLoadEvent(function() {
+		app.init({});
+	});
 </script>
 
 </html>
