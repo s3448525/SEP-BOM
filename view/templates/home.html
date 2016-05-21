@@ -2,134 +2,168 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="initial-scale=1.0">
-	<!-- Bootstrap. Change to min for production -->
-	<link rel="stylesheet" href="/static/css/bootstrap.css" />
-	<link rel="stylesheet" href="/static/css/bootstrap-theme.css" />
-	<!-- Date Range Picker -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0">
+    <!-- Bootstrap. Change to min for production -->
+    <link rel="stylesheet" href="/static/css/bootstrap.css" />
+    <link rel="stylesheet" href="/static/css/bootstrap-theme.css" />
+    <!-- Date Range Picker -->
 
-	<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
-	<!-- Override bootstrap with custom css -->
-	<link rel="stylesheet" href="/static/css/feva.css" />
-	<!-- Site title & etc. -->
-	<title>Feva - evaluate weather forecast accuracy</title>
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
+    <!-- Override bootstrap with custom css -->
+    <link rel="stylesheet" href="/static/css/feva.css" />
+    <!-- Site title & etc. -->
+    <title>Feva - evaluate weather forecast accuracy</title>
 </head>
 
 <body onload="">
 <div class="container" id="main-container">
-	<!-- Main container -->
-	<div class="row" id="header-wrapper">
-		<!-- This row should contain the heading and perhaps a navigation bar -->
-		<div class="col-md-12">
-			<h3>Feva</h3>
-			<span style="font-size: 12px;">: evaluate weather forecast accuracy</span>
-			<span id="clock" style="display: inline-block;"></span>
-		</div>
-	</div>
+    <!-- Main container -->
+    <div class="row" id="header-wrapper">
+        <h3>Feva</h3>
+    </div>
+    <div class="row">
+        <div class="col-md-6 pull-left">
 
-	<div class="row" id="search-bar-wrapper">
-		<div class="col-md-12" id="search-components-wrapper">
-			<select id="select-data-type">
-				<!-- Types of forecast/observation data to be displayed -->
-				<option value="rain">Rainfall</option>
-				<option value="temperature">Temperature</option>
-				<option value="wind_speed">Wind Speed</option>
-				<option value="wind_direction">Wind Direction</option>
-				<option value="cloud">Cloud</option>
-				<option value="humidity">Humidity</option>
-			</select>
-			<input type="text" name="daterange" id="date-range-picker" >
+            <span style="font-size: 12px;">: evaluate weather forecast accuracy</span>
+        </div>
+        <div class="col-md-5 pull-right" id="clock">
+        </div>
+    </div>
 
-			<!-- <label class="search-bar-label">Location:</label> -->
-			<input type="text" name="input_location" id="search-box" placeholder="Search for place">
-			<input type="text" name="input_location_coord" id="location-coord-box" value="">
-			<button id="button-search">Search</button>
-		</div>
-	</div>
+    <div class="row">
+        <div class="row">
+            &nbsp;
+        </div>
+        <div class="col-md-4" id="search-components-wrapper">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <select class="form-control" id="select-data-type">
+                            <!-- Types of forecast/observation data to be displayed -->
+                            <option value="rain">Rainfall</option>
+                            <option value="temperature">Temperature</option>
+                            <option value="wind_speed">Wind Speed</option>
+                            <option value="wind_direction">Wind Direction</option>
+                            <option value="cloud">Cloud</option>
+                            <option value="humidity">Humidity</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="daterange" id="date-range-picker" >
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="input_location" id="search-box" placeholder="Search for place">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="input_location_coord" id="location-coord-box" value="">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-default pull-right" id="button-search">Search</button>
+                </div>
+            </div>
 
-	<div class="row" id="main-content-wrapper">
-		<!-- This is where main content goes, a giant table of data and an interactive map -->
-		<div class="col-md-4" id="sidebar-wrapper">
-			<div class="sidebar-sections" id="location-data">
-				<a class="show-hide-button" data-toggle="collapse" data-target="#data-table">
-					<span id="location-name-label">no evaluation result</span>
-					<span class="glyphicon glyphicon-info-sign"></span>
-				</a>
-				<!-- A giant table -->
-				<table style="width: 100%;" id="data-table" class="collapse">
-					<!--title row-->
-					<tr style="font-weight: bold;" id="data-table-title-row">
-						<td>Date</td>
-						<td>Forecast</td>
-						<td>Actual</td>
-						<td>Accu.</td>
-					</tr>
-					<!--content row(s)-->
-					<tr>
-						<td>-</td>
-						<td>-</td>
-						<td>-</td>
-						<td>-</td>
-					</tr>
-				</table>
-			</div>
+            <div id="settings">
+                <a class="show-hide-button" data-toggle="collapse" data-target="#settings-form">
+                    <span>settings</span>
+                    <span class="glyphicon glyphicon-cog"></span>
+                </a>
+                <form id="settings-form" class="collapse in">
+                    <div class="form-group">
+                        <label for="forecast-source">Forecast Source: </label>
+                        <input class="form-control" id="forecast-source" type="text" value="BOM"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="observation-source" class="settings-label">Observation Source: </label>
+                        <input class="form-control" id="observation-source" type="text" value="WOW"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="search-radius" class="settings-label">Search Radius (meters): </label>
+                        <input class="form-control" id="search-radius" type="text" value="0"/>
+                    </div>
+                </form>
+            </div>
 
-			<div class="sidebar-sections">
-				<a class="show-hide-button" data-toggle="collapse" data-target="#foo-div">
-					<span>daily evaluations</span>
-					<span class="glyphicon glyphicon-list-alt"></span>
-				</a>
-				<div id="foo-div" class="collapse">
-					<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce cursus felis a lorem posuere molestie at eget purus. Ut eu varius risus, ac molestie ligula. Donec eget purus varius nulla fringilla porta eu eu nisi. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Ut nec posuere felis. Aliquam quis mollis orci, pellentesque ullamcorper eros. Cras tincidunt ultricies laoreet. Etiam interdum facilisis lacus quis ultrices. Duis sagittis ligula vel suscipit placerat.</p>
-					<!-- TODO: Implement some kind of all day report for selected date from evaluation table above -->
-				</div>
-			</div>
+        </div>
 
-			<div class="sidebar-sections" id="settings">
-				<a class="show-hide-button" data-toggle="collapse" data-target="#settings-form">
-					<span>settings</span>
-					<span class="glyphicon glyphicon-cog"></span>
-				</a>
-				<form id="settings-form" class="collapse in">
-					<label class="settings-label">Forecast Source: 
-						<input class="settings-input" id="forecast source" type="text" value="BOM"/>
-					</label>
-					<label class="settings-label">Observation Source:
-						<input class="settings-input" id="observation-source" type="text" value="WOW"/>
-					</label>
-					<label class="settings-label">Search Radius (meters): 
-						<input class="settings-input" id="search-radius" type="text" value="0"/>
-					</label>
-				</form>
-			</div>
+        <div class="col-md-8" id="main-content-wrapper">
+            <!-- This is where main content goes, a giant table of data and an interactive map -->
+            <div class="row" id="sidebar-wrapper">
+                <span id="location-name-label">no evaluation result</span>
+                <!-- A giant table -->
+                <table class="table table-striped" id="data-table" class="collapse">
+                    <!--title row-->
+                    <thead>
+                    <tr>
+                        <td>Date</td>
+                        <td>Forecast</td>
+                        <td>Actual</td>
+                        <td>Accu.</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
-			<div class="sidebar-sections">
-				<a class="show-hide-button" data-toggle="collapse in" data-target="#bar-div">
-					<span>status</span>
-					<span class="glyphicon glyphicon-stats"></span>
-				</a>
-				<form id="bar-div" class="collapse in">
-					<label class="settings-label">Current Observation Points:
-						<span id="obs_count"></span>
-					</label>
-				</form>
-			</div>
-		</div>
+            <div class="sidebar-sections">
+                <a class="show-hide-button" data-toggle="collapse" data-target="#foo-div">
+                    <span>daily evaluations</span>
+                    <span class="glyphicon glyphicon-list-alt"></span>
+                </a>
+                <div id="foo-div" class="collapse">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce cursus felis a lorem posuere molestie at eget purus. Ut eu varius risus, ac molestie ligula. Donec eget purus varius nulla fringilla porta eu eu nisi. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Ut nec posuere felis. Aliquam quis mollis orci, pellentesque ullamcorper eros. Cras tincidunt ultricies laoreet. Etiam interdum facilisis lacus quis ultrices. Duis sagittis ligula vel suscipit placerat.</p>
+                    <!-- TODO: Implement some kind of all day report for selected date from evaluation table above -->
+                </div>
+            </div>
 
-		<div class="col-md-8" id="map-wrapper">
-			<!-- An interactive map -->
-			<div id="map"></div>
-			</div>
-	</div>
+            <div class="sidebar-sections">
+                <a class="show-hide-button" data-toggle="collapse in" data-target="#bar-div">
+                    <span>status</span>
+                    <span class="glyphicon glyphicon-stats"></span>
+                </a>
 
-	<div class="row" id="footer-wrapper">
-		<!-- Footer here -->
-		<div class="col-md-12" id="footer">
-			<span id="">Copyright 2016, Feva Project Team, All rights reserved.</span>
-		</div>
-	</div>
-	<!-- End of main container -->
+            </div>
+
+        </div>
+
+
+    </div>
+    <div class="row" id="map-wrapper">
+        <div class="col-md-12">
+            <div id="obs-points">
+                <label>Current Observation Points:
+                    <span id="obs_count"></span>
+                </label>
+            </div>
+            <!-- An interactive map -->
+            <div id="map"></div>
+        </div>
+    </div>
+
+
+    <div class="row" id="footer-wrapper">
+        <!-- Footer here -->
+        <div class="col-md-12" id="footer">
+            <span id="">Copyright 2016, Feva Project Team, All rights reserved.</span>
+        </div>
+    </div>
+    <!-- End of main container -->
 </div>
 </body>
 <!-- jQuery -->
@@ -151,7 +185,7 @@
 
 <!-- Flask -->
 <script type=text/javascript>
-	var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 </script>
 
 <!-- main app -->
@@ -159,52 +193,37 @@
 
 <!-- Clock -->
 <script>
-	function startTime() {
-		var today = new Date();
-		var zone = today.getTimezoneOffset();
-		var year = today.getFullYear();
-		var month = today.getMonth()+1;
-		var day = today.getDate();
-		var h = today.getHours();
-		var m = today.getMinutes();
-		var s = today.getSeconds();
-		month = checkTime(month);
-		day = checkTime(day);
-		h = checkTime(h);
-		m = checkTime(m);
-		s = checkTime(s);
-		document.getElementById('clock').innerHTML =
-		"<span style=';font-size:9px;'>" + "GMT"+ zone/60 + "</span>" + "<br>" +
-		"<span style='font-weight:bold;'>" + year + "-" + month + "-" + day + " " + h + ":" + m + ":" + s + "</span>";
-		var t = setTimeout(startTime, 500);
-	}
-	function checkTime(i) {
-		if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
-		return i;
-	}
+    function startTime() {
+        $('#clock').html(moment().format("MMMM Do YYYY, h:mm:ss a"));
+        setTimeout(startTime, 500);
+    }
+    function checkTime(i) {
+        if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+        return i;
+    }
 </script>
 
 <!-- Master onload function -->
 <script>
-	var app = new Application();
+    var app = new Application();
 
-	function addLoadEvent(func) {
-		var oldonload = window.onload;
-			if (typeof window.onload != 'function') {
-			window.onload = func;
-		} else {
-			window.onload = function() {
-				if (oldonload) {
-					oldonload();
-				}
-				func();
-			}
-		}
-	}
-	addLoadEvent(startTime);
-	addLoadEvent(function() {
-		app.init({});
-	});
+    function addLoadEvent(func) {
+        var oldonload = window.onload;
+        if (typeof window.onload != 'function') {
+            window.onload = func;
+        } else {
+            window.onload = function() {
+                if (oldonload) {
+                    oldonload();
+                }
+                func();
+            }
+        }
+    }
+    addLoadEvent(startTime);
+    addLoadEvent(function() {
+        app.init({});
+    });
 </script>
 
 </html>

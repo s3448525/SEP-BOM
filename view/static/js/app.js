@@ -17,10 +17,10 @@ var Application = function() {
         $('input[name="daterange"]').daterangepicker(
             {
                 locale: {
-                    format: 'YYYY-MM-DD'
+                    format: 'MMMM DD, YYYY'
                 },
-                "dateLimit": {
-                    "days": 7
+                dateLimit: {
+                    days: 7
                 },
                 startDate: startDate,
                 endDate: endDate
@@ -46,13 +46,6 @@ var Application = function() {
         if (location == '' || location == null) {
             alert("Please select a location");
             return;
-        } else {
-            alert("Latitude: " + lat + "\n" +
-                "Longitude: " + lon + "\n" +
-                "Type: " + data_type + "\n" +
-                "Max Distance: " + max_dist + "\n" +
-                "Time: " + time
-            );
         }
 
         // Update location name label
@@ -60,19 +53,16 @@ var Application = function() {
             $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1];
 
         // Display data table if hidden
-        $('#data-table').collapse("show");
 
         // Clear previous content
-        var data_table = document.getElementById("data-table");
-        for (i = 1; data_table.rows.length - i > 0;) {
-            data_table.deleteRow(data_table.rows.length - i);
-        }
+        var data_table = $('#data-table').find('tbody');
+        data_table.empty();
+
 
         // Calculate how many days of data to lookup
         var time_span = Math.ceil(Math.abs(endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
         for (i = 1; i <= time_span; i++) {
-            tr = data_table.insertRow(i);
-            tr.id = "data-table-content-row-" + i;
+            data_table.append('<tr id="data-table-content-row-' + i +'">');
         }
 
         // Initiate requests for each day
@@ -167,7 +157,7 @@ var Application = function() {
             latitude: lat,
             longitude: lon,
             max_distance: max_dist,
-            limit: 99999999
+            limit: 200
         }, function (data) {
             if (data.success == true) {
                 var raw_data = data.data,
