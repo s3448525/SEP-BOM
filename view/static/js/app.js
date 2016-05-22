@@ -6,6 +6,8 @@ var Application = function() {
     var startDate;
     var endDate;
 
+    var loadCount = 0;
+
 
     function __init__(options) {
         $.extend(true, config, options);
@@ -53,10 +55,13 @@ var Application = function() {
             $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1];
 
         // Display data table if hidden
+        $('#result-table').show();
 
         // Clear previous content
+        $('#loading').show();
         var data_table = $('#data-table').find('tbody');
         data_table.empty();
+        data_table.hide();
 
 
         // Calculate how many days of data to lookup
@@ -70,19 +75,23 @@ var Application = function() {
             time = new Date((new Date).setDate(endDate.getDate() - i));
             displayData(data_type, lat, lon, max_dist, time, i + 1);
         }
+
+
     }
 
     // Send API calls
     function makeAPICalls(data_type, lat, lon, max_dist, time, callback) {
         // Send search request
+        loadCount++;
         console.log(data_type, lat, lon, max_dist, time);
-        var temp = $.getJSON('api/evaluate', {
+        $.getJSON('api/evaluate', {
             weather_type: data_type,
             latitude: lat,
             longitude: lon,
             max_distance: max_dist,
             time: time.toISOString()//.substring(0, 10) + "T04\:00\:00\.0Z"
         }, function (data) {
+            loadCount--;
             callback(data);
         });
     }
@@ -146,6 +155,12 @@ var Application = function() {
                     "<td>" + "no data" + "</td>" +
                     "<td>" + "no data" + "</td>" +
                     "<td>" + "-" + "</td>";
+            }
+
+            // hide the loading bar, show the results
+            if(loadCount == 0) {
+                $('#loading').hide();
+                $('#data-table').find('tbody').fadeIn(500);
             }
         });
     }

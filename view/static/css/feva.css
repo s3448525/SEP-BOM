@@ -22,3 +22,21 @@ thead tr {
     text-align: right;
     font-weight: bold;
 }
+
+body {
+    background: #dddddd;
+}
+
+.container {
+    background: #FFFFFF;
+    box-shadow: 4px 4px 8px #888888;
+}
+
+#result-table {
+    display: none;
+}
+
+#loading {
+    display: none;
+    text-align: center;
+}
