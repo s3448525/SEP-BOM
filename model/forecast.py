@@ -42,23 +42,28 @@ class ForecastManager(object):
                 i = 0
                 while i < len(raw_fc['lat_list']):
                     j = 0
+                    pending_values = []
                     while j < len(raw_fc['lon_list']):
                         # Skip NaN values.
                         # TODO make detecting Nan/numpy-masked-values faster.
+                        # TODO detect & skip fill-values for byte valued grids.
                         if not isnan(raw_fc['values'][i][j]):
                             # Create forecast value object.
                             # Note: Values from the lat/lon_list and values arrays
                             # are cast to type float from numpy.float32/64 so that
                             # other modules such as sqlalchemy/psycopg2 know how
                             # handle them.
-                            fc_val = ForecastValue(
+                            pending_values.append(dict(
                                 id_forecast=fc.id,
-                                location=GISPoint(float(raw_fc['lon_list'][j]), float(raw_fc['lat_list'][i])),
-                                value=float(raw_fc['values'][i][j]))
-                            # Prepare to save the value.
-                            session.add(fc_val)
+                                location=GISPoint(
+                                    float(raw_fc['lon_list'][j]),
+                                    float(raw_fc['lat_list'][i])),
+                                value=float(raw_fc['values'][i][j])
+                            ))
                         j += 1
                     # Try flushing the values into the DB to reduce ram usage.
+                    session.bulk_insert_mappings(ForecastValue,
+                        pending_values, return_defaults=False)
                     session.commit()
                     i += 1
 
