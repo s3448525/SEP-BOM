@@ -16,12 +16,14 @@ if (su -c 'psql -l -t --no-align | cut -d"|" -f1 | grep -q feva' - postgres); th
     exit 1
 fi
 
-# Prompt for DB username.
-echo "Enter the DB username, used to create the feva DB and open connections from the application:"
-read feva_user
-if [ -z "$feva_user" ]; then
-    echo "Aborting, username is empty."
-    exit 1
+# Prompt for DB password.
+echo -n 'Enter a password for the new DB user:'
+stty -echo
+read feva_passwd
+stty echo
+echo ''
+if [ -z "$feva_passwd" ]; then
+    echo "Warning, password is empty." 1>&2
 fi
 
 # Initialise DB if this is a fresh postgresql installation.
@@ -38,7 +40,7 @@ fi
 sed -i -e's/^\(host .*127\.0\.0\.1\/32.* ident\)$/#\1/' /var/lib/pgsql/data/pg_hba.conf
 sed -i -e's/^\(host .*::1\/128.* ident\)$/#\1/' /var/lib/pgsql/data/pg_hba.conf
 # Enable md5 passwords for local connections.
-echo "host    all    $feva_user    127.0.0.1/32    md5" >>/var/lib/pgsql/data/pg_hba.conf
+echo "host    all    feva_user    127.0.0.1/32    md5" >>/var/lib/pgsql/data/pg_hba.conf
 
 # Start DBMS running.
 systemctl enable postgresql.service
@@ -52,8 +54,8 @@ CREATE DATABASE feva;
 \\connect feva
 CREATE EXTENSION postgis;
 
-CREATE ROLE $feva_user WITH PASSWORD 'password' LOGIN;
-GRANT SELECT ON spatial_ref_sys TO $feva_user;
+CREATE ROLE feva_user WITH PASSWORD '$feva_passwd' LOGIN;
+GRANT SELECT ON spatial_ref_sys TO feva_user;
 EOFEOF
 su -c "psql -e -f /tmp/psql_tmp.sql" - postgres
 rm -f /tmp/psql_tmp.sql

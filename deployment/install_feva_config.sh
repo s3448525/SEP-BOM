@@ -11,15 +11,23 @@ if [ -e './feva.cfg' ]; then
     exit 1
 fi
 
+# Prompt for the DB password.
+echo -n 'Enter password for connecting to the DB:'
+stty -echo
+read db_passwd
+stty echo
+echo ''
+
+# Prompt for the DB host.
+echo -n "Enter DB host:"
+read db_host
+echo ''
+
 # Create main config file.
 cp -v './config.py' './feva.cfg'
-echo "Enter DB username, Feva will connect using this:"
-read db_username
-echo "Enter DB host:"
-read db_host
-sed -i -e"s/^DB_USERNAME =.*/DB_USERNAME = '$db_username'/" './feva.cfg'
+sed -i -e"s/^DB_USERNAME =.*/DB_USERNAME = 'feva_user'/" './feva.cfg'
 sed -i -e"s/^DB_HOST =.*/DB_HOST = '$db_host'/" './feva.cfg'
-sed -i -e"s/^DB_PASSWORD =.*/DB_PASSWORD = 'password'/" './feva.cfg'
+sed -i -e"s/^DB_PASSWORD =.*/DB_PASSWORD = '$db_passwd'/" './feva.cfg'
 
 # Inform user about forecast and observation configuration.
 echo "Forecast and observation configs may need manual adjustment, eg passwords."
