@@ -1,9 +1,9 @@
 from model.helpers.distance import GISPoint
 from model.schema import RainfallObservation
-import urllib.request
-import urllib.parse
+import urllib
 import datetime
 from flask import json
+import logging
 
 
 configs = []
@@ -36,7 +36,12 @@ def wow_scraper():
     url = '{}?{}'.format(
         'http://wow.metoffice.gov.uk/ajax/home/map',
         url_params)
-    raw_data = urllib.request.urlopen(url)
+    try:
+        raw_data = urllib.request.urlopen(url)
+    except urllib.error.URLError as e:
+        logging.getLogger(__name__).error('Error reading {}: {}'.format(
+            url, e.reason))
+        return
     data = json.load(raw_data)
     # Create Observation objects
     for obs in data['r']:
@@ -157,7 +162,12 @@ def bom_scraper():
         "http://www.bom.gov.au/fwo/IDV60801/IDV60801.99052.json"
     ]
     for url in url_list:
-        raw_data = urllib.request.urlopen(url)
+        try:
+            raw_data = urllib.request.urlopen(url)
+        except urllib.error.URLError as e:
+            logging.getLogger(__name__).error('Error reading {}: {}'.format(
+                url, e.reason))
+            continue
         data = json.load(raw_data)
         # Create Observation objects
         for obs in data['observations']['data']:
