@@ -49,14 +49,17 @@ class Evaluator(object):
         results = []
 
         # Find the closest forecasts.
-        forecasts = forecast_manager.get_forecasts_near(longitude, latitude, time, max_distance=max_distance)
+        forecasts = forecast_manager.get_forecasts_near(longitude, latitude,
+            time, max_distance=max_distance)
         if len(forecasts) < 1:
             raise GeneralException("No forecast found.")
 
-        # Find the closest observations for each forecast.
+        # Evaluate each forecast.
         for forecast_value, forecast, fc_dist in forecasts:
-            log.debug(str(forecast_value)+' '+str(forecast))
-            # find the closest observation
+            log.debug('Evaluating forecast {} with a value of {}.'.format(
+                forecast.name, forecast_value.value))
+
+            # Find the closest observations to the forecast.
             observations = observation_manager.get_observations_near(
                     longitude,
                     latitude,
@@ -64,30 +67,53 @@ class Evaluator(object):
                     forecast.date_range.upper,
                     weather_type,
                     max_distance=max_distance,
-                    limit=1)
+                    limit=5000)
             if len(observations) < 1:
                 raise GeneralException("No observation found.")
-            observation = observations[0]
-            log.debug(str(observation))
+            log.debug('Got {} observations within forecast range.'.format(
+                len(observations)))
 
-            # Evaluate the forecast
-            results.append(dict(forecast=forecast_value, observation=observation, accuracy=self.evaluate(forecast_value, observation), dist_to_forecast=fc_dist))
+            # Evaluate the forecast.
+            accuracy = self.evaluate(forecast_value, observations)
 
-        # return the result
+            # Collect the result.
+            results.append(dict(
+                forecast=forecast_value,
+                observations=observations,
+                accuracy=accuracy,
+                dist_to_forecast=fc_dist))
+
+        # Return the results.
         return results
 
-    def evaluate(self, forecast_value, observation):
+    def evaluate(self, forecast_value, observations):
         """
         Function to actually do the comparison
         :param forecast: The forecast object (ORM)
         :param observation: The observation object (ORM)
         :return: True or False
         """
-        if forecast_value.value >= self.RAINFALL_3HR_THRESHOLD and observation.value > 0:
+        log = logging.getLogger(__name__)
+        # Summarise the observations.
+        obs_min = 0
+        obs_max = 0
+        obs_avg_sum = 0
+        for obs in observations:
+            if obs.value < obs_min:
+                obs_min = obs.value
+            if obs.value > obs_max:
+                obs_max = obs.value
+            obs_avg_sum += obs.value
+        obs_avg = obs_avg_sum / len(observations)
+
+        # Compare forecast and observation values.
+        log.debug(('Comparing forecast value {} to observations(min={}, '
+            'max={}, avg={}).').format(forecast_value.value, obs_min, obs_max,
+                obs_avg))
+        if forecast_value.value >= self.RAINFALL_3HR_THRESHOLD and obs_min > 0:
             # predicted rain and was raining
             return True
-
-        elif forecast_value.value < self.RAINFALL_3HR_THRESHOLD and observation.value == 0:
+        elif forecast_value.value < self.RAINFALL_3HR_THRESHOLD and obs_min == 0:
             # didn't predict rain and wasn't raining
             return True
         else:
