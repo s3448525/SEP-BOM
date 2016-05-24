@@ -121,7 +121,7 @@ function addMarkers(map, location_array) {
             position: {lat: loc[1], lng: loc[2]},
             icon: redCircle,
             map: map,
-            // title: loc[0],
+            title: loc[0],
             // zoom: 10,
         });
         locations.push(marker);

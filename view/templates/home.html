@@ -45,6 +45,28 @@
                     &nbsp;
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-md-10">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="input_location" id="search-box" placeholder="choose location" title="choose location" autofocus>
+                        <input type="text" class="form-control" name="input_location_coord" id="location-coord-box" value="">
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <button class="btn btn-default pull-right" id="button-search">Search</button>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="daterange" id="date-range-picker" >
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-group">
@@ -58,26 +80,6 @@
                             <option value="humidity">Humidity</option>
                         </select>
                     </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <input type="text" class="form-control" name="daterange" id="date-range-picker" >
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="form-group">
-                        <input type="text" class="form-control" name="input_location" id="search-box" placeholder="Search for place">
-                    </div>
-                    <div class="form-group">
-                        <input type="text" class="form-control" name="input_location_coord" id="location-coord-box" value="">
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <button class="btn btn-default pull-right" id="button-search">Search</button>
                 </div>
             </div>
 
@@ -141,7 +143,7 @@
                     <!--title row-->
                     <thead>
                     <tr>
-                        <td>Date</td>
+                        <td>Forecast Date</td>
                         <td>Forecast</td>
                         <td>Actual</td>
                         <td>Accu.</td>
@@ -169,7 +171,7 @@
     <div class="row" id="map-wrapper">
         <div class="col-md-12">
             <div id="obs-points">
-                <label>Current Observation Points:
+                <label>Observation Points:
                     <span id="obs_count"></span>
                 </label>
             </div>
@@ -215,6 +217,7 @@
 
 <!-- Clock -->
 <script>
+/*
     function startTime() {
         $('#clock').html(moment().format("MMMM Do YYYY, h:mm:ss a"));
         setTimeout(startTime, 500);
@@ -223,6 +226,7 @@
         if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
         return i;
     }
+*/
 </script>
 
 <!-- Master onload function -->
@@ -242,7 +246,7 @@
             }
         }
     }
-    addLoadEvent(startTime);
+//    addLoadEvent(startTime);
     addLoadEvent(function() {
         app.init({});
     });

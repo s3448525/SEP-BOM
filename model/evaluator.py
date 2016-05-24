@@ -81,6 +81,7 @@ class Evaluator(object):
                 forecast=forecast_value,
                 observations=observations,
                 accuracy=accuracy,
+                forecast_creation_date=forecast.creation_date,
                 dist_to_forecast=fc_dist))
 
         # Return the results.
@@ -95,7 +96,7 @@ class Evaluator(object):
         """
         log = logging.getLogger(__name__)
         # Summarise the observations.
-        obs_min = 0
+        obs_min = 999999
         obs_max = 0
         obs_avg_sum = 0
         for obs in observations:
@@ -110,10 +111,10 @@ class Evaluator(object):
         log.debug(('Comparing forecast value {} to observations(min={}, '
             'max={}, avg={}).').format(forecast_value.value, obs_min, obs_max,
                 obs_avg))
-        if forecast_value.value >= self.RAINFALL_3HR_THRESHOLD and obs_min > 0:
+        if forecast_value.value >= self.RAINFALL_3HR_THRESHOLD and obs_max > 0:
             # predicted rain and was raining
             return True
-        elif forecast_value.value < self.RAINFALL_3HR_THRESHOLD and obs_min == 0:
+        elif forecast_value.value < self.RAINFALL_3HR_THRESHOLD and obs_max == 0:
             # didn't predict rain and wasn't raining
             return True
         else:
