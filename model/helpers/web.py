@@ -36,7 +36,7 @@ class JsonEncoder(json.JSONEncoder):
     """
     def default(self, o):
         if isinstance(o, datetime.datetime):
-            return o.isoformat()
+            return o.isoformat() + 'Z' #TODO remove Z and add TZ info to datetime objects in Feva&DB
         if isinstance(o, model.schema.Forecast) or isinstance(o, model.schema.ForecastValue) or isinstance(o, model.schema.RainfallObservation):
             return o.toJson()
         return json.JSONEncoder.default(self, o)

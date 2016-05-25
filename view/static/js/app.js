@@ -132,6 +132,11 @@ var Application = function() {
             }
             console.log(data);
 
+            // Sort results by forecast_creation_date.
+            data.data.sort(function(a,b){
+                return new Date(b.forecast_creation_date).getTime() - new Date(a.forecast_creation_date).getTime()
+            });
+
             // Display each forecast.
             // TODO: order forecasts by date.
             // TODO: collapse multiple forecasts from the same day, expandable by clicking.
