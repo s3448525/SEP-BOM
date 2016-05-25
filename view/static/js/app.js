@@ -3,8 +3,8 @@ var Application = function() {
 
     var config = {};
 
-    var startDate;
-    var endDate;
+//    var startDate;
+    var chosenDate;
 
     var loadCount = 0;
 
@@ -12,10 +12,20 @@ var Application = function() {
     function __init__(options) {
         $.extend(true, config, options);
 
-        // Configure date range picker
-        startDate = new Date;
-        endDate = new Date;	// Today
-
+        // Configure date picker.
+        // TODO turn the date/time picker into a slider bar instead of a select.
+        var currentDate = new Date();	// Today
+        currentDate.setHours(currentDate.getHours() - (currentDate.getHours() % 3));
+        currentDate.setMinutes(0);
+        currentDate.setSeconds(0);
+        currentDate.setMilliseconds(0);
+        var earliestDate = currentDate.getTime() - (7*24*60*60*1000);
+        for (var i = currentDate.getTime(); i > earliestDate; i -= (3*60*60*1000)) {
+            var optionDate = new Date(i);
+            $('#date-picker').append($('<option>', {value:optionDate.toISOString(), text:optionDate.toLocaleString()}));
+        }
+        chosenDate = new Date($('#date-picker').val());
+/*
         $('input[name="daterange"]').daterangepicker(
             {
                 locale: {
@@ -31,6 +41,11 @@ var Application = function() {
                 startDate = new Date(start.format('YYYY-MM-DD'));
                 endDate = new Date(end.format('YYYY-MM-DD'));
             });
+*/
+        $('#date-picker').on( "change", function(){
+            chosenDate = new Date($('#date-picker').val());
+            search();
+        });
 
         $('#button-search').off().on('click', search);
     }
@@ -42,7 +57,7 @@ var Application = function() {
             lat = $('input[name="input_location_coord"]').val().split(",")[0],
             lon = $('input[name="input_location_coord"]').val().split(",")[1],
             location = $('input[name="input_location"]').val(),
-            time = endDate.toISOString(),
+            time = chosenDate.toISOString(),
             max_dist = 10000; // meters
         // alert() is only for debug
         if (location == '' || location == null) {
@@ -52,7 +67,7 @@ var Application = function() {
 
         // Update location name label
         document.getElementById("location-name-label").innerHTML =
-            $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1] + " at " + endDate.toString();
+            $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1] + " at " + chosenDate.toLocaleString();
 
         // Display data table if hidden
         $('#result-table').show();
@@ -64,7 +79,7 @@ var Application = function() {
         data_table.hide();
 
         // Initiate requests for each day
-        displayData(data_type, lat, lon, max_dist, endDate);
+        displayData(data_type, lat, lon, max_dist, chosenDate);
     }
 
     // Call API/evaluate to get evaluation data.
