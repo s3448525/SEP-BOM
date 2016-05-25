@@ -52,7 +52,7 @@ var Application = function() {
 
         // Update location name label
         document.getElementById("location-name-label").innerHTML =
-            $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1] + " at " + chosenDate.toLocaleString();
+            'Forecasts made for ' + $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1] + " at " + chosenDate.toLocaleString();
 
         // Display data table if hidden
         $('#result-table').show();
@@ -83,6 +83,7 @@ var Application = function() {
 
     function collapse_day(day) {
         console.log('collapse row '+day);
+        console.log(sub_day_forecasts);
         for (row_id in sub_day_forecasts[day]) {
             console.log('toggling '+row_id);
             var row = $('#'+row_id);
@@ -141,6 +142,7 @@ var Application = function() {
             var prev_day = '';
             for (i = 0; i < data.data.length; i++) {
                 var fc_creation_date = new Date(data.data[i].forecast_creation_date);
+                console.log(fc_creation_date.toISOString());
                 var observations = data.data[i].observations;
                 var obs_value_min, obs_value_max;
                 for (j = 0; j < observations.length; j++) {
@@ -170,22 +172,25 @@ var Application = function() {
                 var day = String(fc_creation_date.getDate());
                 day =(day.length != 2)? '0'+day : day;
                 var month = String(fc_creation_date.getMonth());
-                month = (month.length != 2)? '0'+month : month;
+                month =(month.length != 2)? '0'+month : month;
                 var fc_creation_day = String(fc_creation_date.getFullYear()) + month + day;
                 var row_id = String(fc_creation_day) + '-' + String(i);
                 if (fc_creation_day != prev_day) {
+                    // First row of this day.
                     prev_day = fc_creation_day;
                     sub_day_forecasts[fc_creation_day] = [];
                 } else {
+                    // Second-onwards row.
                     sub_day_forecasts[fc_creation_day].push = row_id;
                 }
                 // Display the result.
                 data_table.append("<tr id='"+row_id+"'>" +
-                    "<td>" + data.data[i].forecast_creation_date + "</td>" +
+                    "<td>" + new Date(data.data[i].forecast_creation_date).toLocaleString() + "</td>" +
                     "<td>" + data.data[i].forecast.value.toString() + fc_unit + "</td>" +
                     "<td>" + obs_value_min + " - " + obs_value_max + " " + ob_unit + "</td>" +
                     "<td>" + accuracy + "</td>" +
                     "</tr>");
+                console.log(fc_creation_day);
                 $('#'+row_id).on('click', function() {
                     var day = fc_creation_day;
                     alert(day);
