@@ -7,6 +7,7 @@ var Application = function() {
     var chosenDate;
 
     var loadCount = 0;
+    var sub_day_forecasts = {}
 
 
     function __init__(options) {
@@ -25,23 +26,7 @@ var Application = function() {
             $('#date-picker').append($('<option>', {value:optionDate.toISOString(), text:optionDate.toLocaleString()}));
         }
         chosenDate = new Date($('#date-picker').val());
-/*
-        $('input[name="daterange"]').daterangepicker(
-            {
-                locale: {
-                    format: 'MMMM DD, YYYY'
-                },
-                dateLimit: {
-                    days: 7
-                },
-                startDate: startDate,
-                endDate: endDate
-            }, function (start, end, label) {
-                console.log("A new date range was chosen: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
-                startDate = new Date(start.format('YYYY-MM-DD'));
-                endDate = new Date(end.format('YYYY-MM-DD'));
-            });
-*/
+
         $('#date-picker').on( "change", function(){
             chosenDate = new Date($('#date-picker').val());
             search();
@@ -96,11 +81,23 @@ var Application = function() {
         });
     }
 
+    function collapse_day(day) {
+        console.log('collapse row '+day);
+        for (row_id in sub_day_forecasts[day]) {
+            console.log('toggling '+row_id);
+            var row = $('#'+row_id);
+            row.toggle('fast');
+        }
+    }
+
     // Display returned API data and populate the data table
     function displayData(data_type, lat, lon, max_dist, time) {
         //get our JSON
         evaluateForecasts(data_type, lat, lon, max_dist, time, function (data) {
             var data_table = $('#data-table').find('tbody');
+            data_table.empty();
+            sub_day_forecasts = {};
+
             // console.log(time);
             //
             if (data.success != true) {
@@ -141,7 +138,9 @@ var Application = function() {
             // TODO: order forecasts by date.
             // TODO: collapse multiple forecasts from the same day, expandable by clicking.
             var observation_points = {};
+            var prev_day = '';
             for (i = 0; i < data.data.length; i++) {
+                var fc_creation_date = new Date(data.data[i].forecast_creation_date);
                 var observations = data.data[i].observations;
                 var obs_value_min, obs_value_max;
                 for (j = 0; j < observations.length; j++) {
@@ -167,13 +166,31 @@ var Application = function() {
                 } else {
                     accuracy = "<span style='color:#FA0000;'>✘</span>";
                 }
+                // Hide all but one forecast for each day.
+                var day = String(fc_creation_date.getDate());
+                day =(day.length != 2)? '0'+day : day;
+                var month = String(fc_creation_date.getMonth());
+                month = (month.length != 2)? '0'+month : month;
+                var fc_creation_day = String(fc_creation_date.getFullYear()) + month + day;
+                var row_id = String(fc_creation_day) + '-' + String(i);
+                if (fc_creation_day != prev_day) {
+                    prev_day = fc_creation_day;
+                    sub_day_forecasts[fc_creation_day] = [];
+                } else {
+                    sub_day_forecasts[fc_creation_day].push = row_id;
+                }
                 // Display the result.
-                data_table.append("<tr>" +
+                data_table.append("<tr id='"+row_id+"'>" +
                     "<td>" + data.data[i].forecast_creation_date + "</td>" +
                     "<td>" + data.data[i].forecast.value.toString() + fc_unit + "</td>" +
                     "<td>" + obs_value_min + " - " + obs_value_max + " " + ob_unit + "</td>" +
                     "<td>" + accuracy + "</td>" +
                     "</tr>");
+                $('#'+row_id).on('click', function() {
+                    var day = fc_creation_day;
+                    alert(day);
+                    collapse_day(day);
+                });
             }
 
             // Display observation points on the map.
