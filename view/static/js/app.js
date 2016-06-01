@@ -52,7 +52,7 @@ var Application = function() {
 
         // Update location name label
         document.getElementById("location-name-label").innerHTML =
-            'Forecasts applying to ' + $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1] + " at " + chosenDate.toLocaleTimeString() + " " + chosenDate.toLocaleDateString();
+            $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1] + "<br>" + chosenDate.toLocaleDateString() + " " + chosenDate.toLocaleTimeString();
 
         // Display data table if hidden
         $('#result-table').show();
@@ -104,7 +104,7 @@ var Application = function() {
             var fc_unit = "", ob_unit = "";
             switch (data_type) {
                 case "rain":
-                    fc_unit = "%";
+                    fc_unit = "% chance of rain";
                     ob_unit = "mm";
                     break;
                 case "temperature":
@@ -174,21 +174,19 @@ var Application = function() {
                 var fc_creation_day = String(fc_creation_date.getFullYear()) + month + day;
                 if (fc_creation_day != prev_day) {
                     // First row of this day.
-                    prev_day = fc_creation_day;
-                    data_table.append("<tr class='info'>" +
-                        "<td>" + new Date(data.data[i].forecast_creation_date).toDateString() + "</td>" +
-                        "<td colspan='3'></td>" +
-                        "</tr>");
                 }
                 // Display the result.
                 data_table.append("<tr>" +
-                    "<td><span style='padding-left:2em;'>" + new Date(data.data[i].forecast_creation_date).toLocaleTimeString() + "</span></td>" +
-                    "<td>" + data.data[i].forecast.value.toString() + fc_unit + "</td>" +
-                    "<td>" + obs_value_min + " - " + obs_value_max + " " + ob_unit + "</td>" +
-                    "<td>" + accuracy + "</td>" +
-                    "</tr>");
+                    "<td><div style='font-size:14pt;display:inline-block;'>Forecast from " + new Date(data.data[i].forecast_creation_date).toLocaleString() + "</div>" +
+                    "<div style='font-size:14pt;display:inline-block;'><span style='margin:0em 2em;'>" + data.data[i].forecast.value.toString() + fc_unit + "</span>" +
+                    "<span style='font-size:18pt;'>" + accuracy + "</span></div>" +
+                    "<div style='font-size:10pt;color:#646464;'>Observations for this period: " +obs_value_min + " - " + obs_value_max + " " + ob_unit + "</div>" +
+                    "</td></tr>");
                 console.log(fc_creation_day);
             }
+
+            // Display overall observation summary.
+            $('#observation-summary').html(overall_obs_min+" - "+overall_obs_max+" "+ ob_unit);
 
             // Display observation points on the map.
             var observation_points_list = [];

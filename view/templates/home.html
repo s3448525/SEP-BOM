@@ -136,29 +136,21 @@
 
         <div class="col-md-8" id="main-content-wrapper">
             <!-- This is where main content goes, a giant table of data and an interactive map -->
+            <div style="margin: 1em 0em;">
+                <span id="location-name-label" style="padding:8px;font-size:18pt;">no evaluation result</span>
+                <span id="observation-summary" style="padding:8px;font-size:18pt;">no evaluation result</span>
+            </div>
             <div class="row" id="result-table">
-                <span id="location-name-label" style="padding:8px;">no evaluation result</span>
                 <!-- A giant table -->
 
                 <table class="table" id="data-table" class="collapse">
                     <!--title row-->
-                    <thead>
-                    <tr>
-                        <td>Forecast Issue Date</td>
-                        <td>Forecast</td>
-                        <td>Actual</td>
-                        <td>Accu.</td>
-                    </tr>
+                    <tbody>
                     <tr id="loading">
-                        <td colspan="4"><i class="fa fa-refresh fa-spin"></i> <span>Loading results</span></td>
+                        <td><i class="fa fa-refresh fa-spin"></i> <span>Loading results</span></td>
 
                     </tr>
-                    </thead>
-                    <tbody>
                     <tr>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
                         <td>-</td>
                     </tr>
                     </tbody>
