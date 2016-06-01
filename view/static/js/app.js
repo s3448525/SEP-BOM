@@ -52,7 +52,7 @@ var Application = function() {
 
         // Update location name label
         document.getElementById("location-name-label").innerHTML =
-            'Forecasts made for ' + $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1] + " at " + chosenDate.toLocaleString();
+            'Forecasts applying to ' + $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1] + " at " + chosenDate.toLocaleTimeString() + " " + chosenDate.toLocaleDateString();
 
         // Display data table if hidden
         $('#result-table').show();
@@ -79,16 +79,6 @@ var Application = function() {
         }, function (data) {
             callback(data);
         });
-    }
-
-    function collapse_day(day) {
-        console.log('collapse row '+day);
-        console.log(sub_day_forecasts);
-        for (row_id in sub_day_forecasts[day]) {
-            console.log('toggling '+row_id);
-            var row = $('#'+row_id);
-            row.toggle('fast');
-        }
     }
 
     // Display returned API data and populate the data table
@@ -138,6 +128,8 @@ var Application = function() {
             // Display each forecast.
             // TODO: order forecasts by date.
             // TODO: collapse multiple forecasts from the same day, expandable by clicking.
+            var overall_obs_min = 0;
+            var overall_obs_max = 0;
             var observation_points = {};
             var prev_day = '';
             for (i = 0; i < data.data.length; i++) {
@@ -161,6 +153,12 @@ var Application = function() {
                     // Find the maximum observation.
                     if (j == 0 || observations[j].value > obs_value_max)
                         obs_value_max = observations[j].value;
+                    // Find the overall minimum observation.
+                    if (j == 0 || observations[j].value < overall_obs_min)
+                        overall_obs_min = observations[j].value;
+                    // Find the overall maximum observation.
+                    if (j == 0 || observations[j].value > overall_obs_max)
+                        overall_obs_max = observations[j].value;
                 }
                 accuracy = "-"
                 if (data.data[i].accuracy == true) {
@@ -171,31 +169,25 @@ var Application = function() {
                 // Hide all but one forecast for each day.
                 var day = String(fc_creation_date.getDate());
                 day =(day.length != 2)? '0'+day : day;
-                var month = String(fc_creation_date.getMonth());
+                var month = String(fc_creation_date.getMonth() + 1);
                 month =(month.length != 2)? '0'+month : month;
                 var fc_creation_day = String(fc_creation_date.getFullYear()) + month + day;
-                var row_id = String(fc_creation_day) + '-' + String(i);
                 if (fc_creation_day != prev_day) {
                     // First row of this day.
                     prev_day = fc_creation_day;
-                    sub_day_forecasts[fc_creation_day] = [];
-                } else {
-                    // Second-onwards row.
-                    sub_day_forecasts[fc_creation_day].push = row_id;
+                    data_table.append("<tr class='info'>" +
+                        "<td>" + new Date(data.data[i].forecast_creation_date).toDateString() + "</td>" +
+                        "<td colspan='3'></td>" +
+                        "</tr>");
                 }
                 // Display the result.
-                data_table.append("<tr id='"+row_id+"'>" +
-                    "<td>" + new Date(data.data[i].forecast_creation_date).toLocaleString() + "</td>" +
+                data_table.append("<tr>" +
+                    "<td><span style='padding-left:2em;'>" + new Date(data.data[i].forecast_creation_date).toLocaleTimeString() + "</span></td>" +
                     "<td>" + data.data[i].forecast.value.toString() + fc_unit + "</td>" +
                     "<td>" + obs_value_min + " - " + obs_value_max + " " + ob_unit + "</td>" +
                     "<td>" + accuracy + "</td>" +
                     "</tr>");
                 console.log(fc_creation_day);
-                $('#'+row_id).on('click', function() {
-                    var day = fc_creation_day;
-                    alert(day);
-                    collapse_day(day);
-                });
             }
 
             // Display observation points on the map.
