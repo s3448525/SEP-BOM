@@ -51,8 +51,12 @@ var Application = function() {
         }
 
         // Update location name label
+        var displayChosenDate = moment.utc(chosenDate.toISOString());
+        displayChosenDate.local();
         document.getElementById("location-name-label").innerHTML =
-            $('input[name="input_location"]').val().split(",")[0] + ", " + $('input[name="input_location"]').val().split(",")[1] + "<br>" + chosenDate.toLocaleDateString() + " " + chosenDate.toLocaleTimeString();
+            $('input[name="input_location"]').val().split(",")[0] +
+            ", " + $('input[name="input_location"]').val().split(",")[1] +
+            ", " + displayChosenDate.calendar(null, {'sameElse':'ddd MMM D [at] ha'});
 
         // Display data table if hidden
         $('#result-table').show();
@@ -62,6 +66,7 @@ var Application = function() {
         var data_table = $('#data-table').find('tbody');
         data_table.empty();
         data_table.hide();
+        $('#observation-summary').empty();
 
         // Initiate requests for each day
         displayData(data_type, lat, lon, max_dist, chosenDate);
@@ -133,7 +138,8 @@ var Application = function() {
             var observation_points = {};
             var prev_day = '';
             for (i = 0; i < data.data.length; i++) {
-                var fc_creation_date = new Date(data.data[i].forecast_creation_date);
+                var fc_creation_date = moment.utc(data.data[i].forecast_creation_date);
+                fc_creation_date.local();
                 console.log(fc_creation_date.toISOString());
                 var observations = data.data[i].observations;
                 var obs_value_min, obs_value_max;
@@ -167,20 +173,16 @@ var Application = function() {
                     accuracy = "<span style='color:#FA0000;'>✘</span>";
                 }
                 // Hide all but one forecast for each day.
-                var day = String(fc_creation_date.getDate());
-                day =(day.length != 2)? '0'+day : day;
-                var month = String(fc_creation_date.getMonth() + 1);
-                month =(month.length != 2)? '0'+month : month;
-                var fc_creation_day = String(fc_creation_date.getFullYear()) + month + day;
+                var fc_creation_day = fc_creation_date.format('YYYYMMDD');
                 if (fc_creation_day != prev_day) {
                     // First row of this day.
                 }
                 // Display the result.
                 data_table.append("<tr>" +
-                    "<td><div style='font-size:14pt;display:inline-block;'>Forecast from " + new Date(data.data[i].forecast_creation_date).toLocaleString() + "</div>" +
+                    "<td><div style='font-size:14pt;display:inline-block;'><span style='color:#808080;'>Issued</span> " + fc_creation_date.calendar(null, {'sameElse':'ddd MMM D [at] ha'}) + "</div>" +
                     "<div style='font-size:14pt;display:inline-block;'><span style='margin:0em 2em;'>" + data.data[i].forecast.value.toString() + fc_unit + "</span>" +
                     "<span style='font-size:18pt;'>" + accuracy + "</span></div>" +
-                    "<div style='font-size:10pt;color:#646464;'>Observations for this period: " +obs_value_min + " - " + obs_value_max + " " + ob_unit + "</div>" +
+                    "<div style='font-size:10pt;color:#808080;'>Observations for this period: " +obs_value_min + " - " + obs_value_max + " " + ob_unit + "</div>" +
                     "</td></tr>");
                 console.log(fc_creation_day);
             }

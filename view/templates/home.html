@@ -137,9 +137,10 @@
         <div class="col-md-8" id="main-content-wrapper">
             <!-- This is where main content goes, a giant table of data and an interactive map -->
             <div style="margin: 1em 0em;">
-                <span id="location-name-label" style="padding:8px;font-size:18pt;">no evaluation result</span>
-                <span id="observation-summary" style="padding:8px;font-size:18pt;">no evaluation result</span>
+                <span id="location-name-label" style="display:inline-block; font-size:18pt;">Choose a location</span>
+                <span id="observation-summary" style="display:inline-block; margin:0em 0em 0em 0.5em; font-size:18pt;"> </span>
             </div>
+            <h3>Forecasts</h3>
             <div class="row" id="result-table">
                 <!-- A giant table -->
 
@@ -204,6 +205,9 @@
 <script type=text/javascript>
     var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 </script>
+
+<!-- Moment -->
+<script src="/static/js/component/moment-with-locales.min.js"></script>
 
 <!-- main app -->
 <script src="static/js/app.js"></script>
