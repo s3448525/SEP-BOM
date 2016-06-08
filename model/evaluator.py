@@ -78,7 +78,8 @@ class Evaluator(object):
 
             # Collect the result.
             results.append(dict(
-                forecast=forecast_value,
+                forecast=forecast,
+                forecast_value=forecast_value,
                 observations=observations,
                 accuracy=accuracy,
                 dist_to_forecast=fc_dist))

@@ -34,14 +34,17 @@ class Forecast(Base):
     date_range = Column(TSRANGE)
 
     def __str__(self):
-        return 'Forecast({}, {}, {}, {})'.format(str(self.id), self.name, str(self.creation_date), str(self.date_range))
+        return 'Forecast({}, {}, {}, {})'.format(
+            str(self.id), self.name, str(self.creation_date),
+            str(self.date_range))
 
     def toJson(self):
         return {
             'id': self.id,
             'name': self.name,
             'creation_date': self.creation_date,
-            'date_range': self.date_range
+            'date_range': { 'lower':self.date_range.lower,
+                'upper':self.date_range.upper }
         }
 
 

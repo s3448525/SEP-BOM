@@ -164,11 +164,11 @@
 							var observation_points = [];
 							var forecast_value_average = 0, observation_value_average = 0;
 							for (i = 0; i < data.data.length; i++) {
-								forecast_value_average += data.data[i].forecast.value;
-								observation_value_average += data.data[i].observation.value;
-								observation_points[i] = [data.data[i].observation.value.toString(),
-														data.data[i].observation.location[0],
-														data.data[i].observation.location[1]];
+								forecast_value_average += data.data[i].forecast_value.value;
+								observation_value_average += data.data[i].observations[0].value;
+								observation_points[i] = [data.data[i].observations[0].value.toString(),
+														data.data[i].observations[0].location[0],
+														data.data[i].observations[0].location[1]];
 							}
 							forecast_value_average = (forecast_value_average / data.data.length).toFixed(2);
 							observation_value_average = (observation_value_average / data.data.length).toFixed(2);
@@ -182,8 +182,8 @@
 							// Display valid data
 							document.getElementById("data-table-content-row-" + row_number).innerHTML = 
 								"<td>" + new Date(time).toString().substring(4, 10) + "</td>" + 
-								"<td>" + data.data[0].forecast.value.toString() + fc_unit + "</td>" +
-								"<td>" + data.data[0].observation.value.toString() + ob_unit + "</td>" +
+								"<td>" + data.data[0].forecast_value.value.toString() + fc_unit + "</td>" +
+								"<td>" + data.data[0].observations[0].value.toString() + ob_unit + "</td>" +
 								"<td>" + accuracy + "</td>";
 						} else {
 							// Display error
