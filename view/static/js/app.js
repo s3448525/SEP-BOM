@@ -138,7 +138,7 @@ var Application = function() {
             var observation_points = {};
             var prev_day = '';
             for (i = 0; i < data.data.length; i++) {
-                var fc_creation_date = moment.utc(data.data[i].forecast_creation_date);
+                var fc_creation_date = moment.utc(data.data[i].forecast.creation_date);
                 fc_creation_date.local();
                 console.log(fc_creation_date.toISOString());
                 var observations = data.data[i].observations;
@@ -175,7 +175,7 @@ var Application = function() {
                 // Display the result.
                 data_table.append("<tr>" +
                     "<td><div style='font-size:14pt;display:inline-block;min-width:29ch;'><span style='color:#808080;'>Issued</span> " + fc_creation_date.calendar(null, {'sameElse':'ddd MMM D [at] ha'}) + "</div>" +
-                    "<div style='font-size:14pt;display:inline-block;margin:0 0 0 2ch;'>" + data.data[i].forecast.value.toString() + fc_unit + "</div>" +
+                    "<div style='font-size:14pt;display:inline-block;margin:0 0 0 2ch;'>" + data.data[i].forecast_value.value.toString() + fc_unit + "</div>" +
                     "<div style='display:inline-block;font-size:14pt;margin:0 0 0 2ch;'>" + accuracy +
                     "<span style='display:inline-block;font-size:10pt;color:#808080;margin:0 0 0 1ch;'>Observed " + obs_value_min + " - " + obs_value_max + " " + ob_unit + "</span></div>" +
                     "</td></tr>");
