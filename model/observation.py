@@ -25,7 +25,7 @@ class ObservationManager(object):
         params = validator.validate(self.EVALUATE_SCHEMA, params)
         return self.get_observations_near(**params)
 
-    def get_observations_near(self, longitude, latitude, start_time=None, end_time=None, weather_type='rain', max_distance=1000, limit=10):
+    def get_observations_near(self, longitude, latitude, start_time=None, end_time=None, weather_type='rain', source='', max_distance=1000, limit=10):
         """
         :param longitude:
         :param latitude:
@@ -41,10 +41,14 @@ class ObservationManager(object):
             end_time = start_time + datetime.timedelta(hours=4)
         # Query the DB for observations.
         point = GISPoint(longitude, latitude)
+        optional_filters = {}
+        if source:
+            optional_filters['source'] = source
         observations = self.db.session.query(RainfallObservation)\
             .filter(Within(RainfallObservation.location, point, max_distance))\
             .filter(RainfallObservation.time > start_time)\
             .filter(RainfallObservation.time <= end_time)\
+            .filter_by(**optional_filters)\
             .order_by(Distance(RainfallObservation.location, point))\
             .limit(limit)\
             .all()

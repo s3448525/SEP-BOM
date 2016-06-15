@@ -13,7 +13,8 @@ class Evaluator(object):
         validator.Required('latitude'): validator.Latitude(),
         validator.Optional('time', default=None): validator.Datetime(),
         validator.Optional('max_distance', default=3000): validator.Coerce(int),
-        validator.Optional('weather_type', default='rain'): validator.Coerce(str)
+        validator.Optional('weather_type', default='rain'): validator.Coerce(str),
+        validator.Optional('obs_source', default=''): validator.Coerce(str)
     }
     # The probability of rainfall which gives the 'Umbrella' icon
     RAINFALL_3HR_THRESHOLD = 15
@@ -26,7 +27,7 @@ class Evaluator(object):
         params = validator.validate(self.EVALUATE_SCHEMA, params)
         return self.evaluate_lat_lon(**params)
 
-    def evaluate_lat_lon(self, longitude, latitude, time=None, max_distance=3000,  weather_type='rain', obs_source='wow', forecast_source='bom'):
+    def evaluate_lat_lon(self, longitude, latitude, time=None, max_distance=3000,  weather_type='rain', obs_source='', forecast_source='bom'):
         """
         Find the closest forecasts to the lat/lon at the given time, and
         compare them to the closest observation.
@@ -66,6 +67,7 @@ class Evaluator(object):
                     forecast.date_range.lower,
                     forecast.date_range.upper,
                     weather_type,
+                    obs_source,
                     max_distance=max_distance,
                     limit=5000)
             if len(observations) < 1:

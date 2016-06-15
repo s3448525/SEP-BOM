@@ -33,6 +33,7 @@ var Application = function() {
         });
 
         $('#button-search').off().on('click', search);
+        $('#observation-source').on('change', search);
     }
 
     function search() {
@@ -42,6 +43,7 @@ var Application = function() {
             lat = $('input[name="input_location_coord"]').val().split(",")[0],
             lon = $('input[name="input_location_coord"]').val().split(",")[1],
             location = $('input[name="input_location"]').val(),
+            obs_source = $('#observation-source').val(),
             time = chosenDate.toISOString(),
             max_dist = 10000; // meters
         // alert() is only for debug
@@ -69,27 +71,28 @@ var Application = function() {
         $('#observation-summary').empty();
 
         // Initiate requests for each day
-        displayData(data_type, lat, lon, max_dist, chosenDate);
+        displayData(data_type, lat, lon, max_dist, chosenDate, obs_source);
     }
 
     // Call API/evaluate to get evaluation data.
-    function evaluateForecasts(data_type, lat, lon, max_dist, time, callback) {
+    function evaluateForecasts(data_type, lat, lon, max_dist, time, obs_source, callback) {
         console.log(data_type, lat, lon, max_dist, time);
         $.getJSON('api/evaluate/', {
             weather_type: data_type,
             latitude: lat,
             longitude: lon,
             max_distance: max_dist,
-            time: time.toISOString()
+            time: time.toISOString(),
+            obs_source: obs_source
         }, function (data) {
             callback(data);
         });
     }
 
     // Display returned API data and populate the data table
-    function displayData(data_type, lat, lon, max_dist, time) {
+    function displayData(data_type, lat, lon, max_dist, time, obs_source) {
         //get our JSON
-        evaluateForecasts(data_type, lat, lon, max_dist, time, function (data) {
+        evaluateForecasts(data_type, lat, lon, max_dist, time, obs_source, function (data) {
             var data_table = $('#data-table').find('tbody');
             data_table.empty();
             sub_day_forecasts = {};
