@@ -94,7 +94,6 @@ var Application = function() {
             data_table.empty();
             sub_day_forecasts = {};
 
-            // console.log(time);
             //
             if (data.success != true) {
                 // Display error
@@ -166,19 +165,32 @@ var Application = function() {
                     if (j == 0 || observations[j].value > overall_obs_max)
                         overall_obs_max = observations[j].value;
                 }
-                accuracy = "-"
+                var accuracy = "-";
                 if (data.data[i].accuracy == true) {
-                    accuracy = "<span style='color:#00FA00;font-size:18pt;'>✔</span>";
+                    accuracy = '<i class="fa fa-check result-correct" aria-hidden="true"></i>';
                 } else {
-                    accuracy = "<span style='color:#FA0000;font-size:18pt;'>✘</span>";
+                    accuracy = '<i class="fa fa-times result-incorrect" aria-hidden="true"></i>';
                 }
                 // Display the result.
-                data_table.append("<tr>" +
-                    "<td><div style='font-size:14pt;display:inline-block;min-width:29ch;'><span style='color:#808080;'>Issued</span> " + fc_creation_date.calendar(null, {'sameElse':'ddd MMM D [at] ha'}) + "</div>" +
-                    "<div style='font-size:14pt;display:inline-block;margin:0 0 0 2ch;'>" + data.data[i].forecast_value.value.toString() + fc_unit + "</div>" +
-                    "<div style='display:inline-block;font-size:14pt;margin:0 0 0 2ch;'>" + accuracy +
-                    "<span style='display:inline-block;font-size:10pt;color:#808080;margin:0 0 0 1ch;'>Observed " + obs_value_min + " - " + obs_value_max + " " + ob_unit + "</span></div>" +
-                    "</td></tr>");
+                var date = $('<td>');
+                var forecast_value = $('<td>');
+                var forecast_result = $('<td>');
+                var evaluation = $('<td>');
+
+                date.html('<span class="forecast-issued">Issued </span>' + fc_creation_date.from(time, true) + ' before');
+                forecast_value.html(data.data[i].forecast_value.value.toString() + fc_unit);
+                forecast_result.html("Observed " + obs_value_min + " - " + obs_value_max + " " + ob_unit);
+                evaluation.html(accuracy);
+
+                var row = $('<tr>');
+
+                row.append(date).append(forecast_value).append(forecast_result).append(evaluation);
+                data_table.append(row);
+                date.tooltip({
+                    container: 'body',
+                    title: fc_creation_date.format('MMM Do YYYY, [at] hh:mm A'),
+                    placement: 'top'
+                });
             }
 
             // Display overall observation summary.
@@ -197,48 +209,9 @@ var Application = function() {
         });
     }
 
-    // Make API call to get
-    function getObservations(lat, lon, max_dist) {
-        return;
-        // Send search request
-        var temp = $.getJSON('/api/locations/observations', {
-            latitude: lat,
-            longitude: lon,
-            max_distance: max_dist,
-            limit: 200
-        }, function (data) {
-            if (data.success == true) {
-                var raw_data = data.data,
-                    uniq_locations = new Set(),
-                    uniq_locations_string = [];
-
-                $.each(raw_data, function (index, value) {
-                    coord = value.location[0].toString() + "," + value.location[1].toString();
-                    if ($.inArray(coord, uniq_locations_string) == -1) {
-                        uniq_locations.add(value.location);
-                        uniq_locations_string.push(coord);
-                    }
-                });
-
-                uniq_locations = Array.from(uniq_locations);
-                observation_locations = [];
-                $.each(uniq_locations, function (index, value) {
-                    uniq_locations[index].splice(0, 0, raw_data[index].value.toString());
-                    observation_locations.push(uniq_locations[index]);
-                });
-
-                addMarkers(map, observation_locations);
-                // showMarkers();
-                // console.log("current number of observation points: " + uniq_locations.length);
-                document.getElementById("obs_count").innerHTML = uniq_locations.length;
-            }
-        });
-    }
-
 
     return {
         init: __init__,
-        search: search,
-        getObservations: getObservations
+        search: search
     }
 };

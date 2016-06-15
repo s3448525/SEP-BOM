@@ -40,3 +40,15 @@ body {
     display: none;
     text-align: center;
 }
+
+.result-correct {
+    color: #009933;
+}
+
+.result-incorrect {
+    color: #ff3300;
+}
+
+.forecast-issued {
+    color: #808080;
+}
