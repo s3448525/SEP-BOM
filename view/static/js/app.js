@@ -50,7 +50,7 @@ var Application = function() {
         }
 
         // Update location name label
-        var displayChosenDate = moment.utc(chosenDate.toISOString());
+        var displayChosenDate = moment(chosenDate.getTime());
         $("#location-name-label").html(
             location.split(",")[0] + ", " +location.split(",")[1] +
             ", " + displayChosenDate.calendar(null, {'sameElse':'ddd MMM D [at] ha'}));
