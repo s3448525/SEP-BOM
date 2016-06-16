@@ -3,11 +3,9 @@ var Application = function() {
 
     var config = {};
 
-//    var startDate;
     var chosenDate;
 
-    var loadCount = 0;
-    var sub_day_forecasts = {}
+    var sub_day_forecasts = {};
 
 
     function __init__(options) {
@@ -21,14 +19,15 @@ var Application = function() {
         currentDate.setSeconds(0);
         currentDate.setMilliseconds(0);
         var earliestDate = currentDate.getTime() - (7*24*60*60*1000);
+        var datePicker = $('#date-picker');
         for (var i = currentDate.getTime(); i > earliestDate; i -= (3*60*60*1000)) {
-            var optionDate = new Date(i);
-            $('#date-picker').append($('<option>', {value:optionDate.toISOString(), text:optionDate.toLocaleString()}));
+            var optionDate = moment(i);
+            datePicker.append($('<option>', {value:optionDate.toISOString(), text:optionDate.format('DD/MM/YYYY, hh:mm:ss A')}));
         }
-        chosenDate = new Date($('#date-picker').val());
+        chosenDate = new Date(datePicker.val());
 
-        $('#date-picker').on( "change", function(){
-            chosenDate = new Date($('#date-picker').val());
+        datePicker.on( "change", function(){
+            chosenDate = new Date($(this).val());
             search();
         });
 
@@ -39,11 +38,11 @@ var Application = function() {
         // Feva API call to retrieve JSON object
         var e = document.getElementById("select-data-type"),
             data_type = e.options[e.selectedIndex].value,
-            lat = $('input[name="input_location_coord"]').val().split(",")[0],
-            lon = $('input[name="input_location_coord"]').val().split(",")[1],
+            coords = $('input[name="input_location_coord"]').val().split(","),
             location = $('input[name="input_location"]').val(),
             time = chosenDate.toISOString(),
             max_dist = 10000; // meters
+        var lat = coords[0], lon = coords[1];
         // alert() is only for debug
         if (location == '' || location == null) {
             alert("Please select a location");
@@ -52,11 +51,9 @@ var Application = function() {
 
         // Update location name label
         var displayChosenDate = moment.utc(chosenDate.toISOString());
-        displayChosenDate.local();
-        document.getElementById("location-name-label").innerHTML =
-            $('input[name="input_location"]').val().split(",")[0] +
-            ", " + $('input[name="input_location"]').val().split(",")[1] +
-            ", " + displayChosenDate.calendar(null, {'sameElse':'ddd MMM D [at] ha'});
+        $("#location-name-label").html(
+            location.split(",")[0] + ", " +location.split(",")[1] +
+            ", " + displayChosenDate.calendar(null, {'sameElse':'ddd MMM D [at] ha'}));
 
         // Display data table if hidden
         $('#result-table').show();
