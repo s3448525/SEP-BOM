@@ -93,12 +93,16 @@
                 <div class="collapse" id="settings-div">
                 <form id="settings-form" class="collapse in">
                     <div class="form-group">
-                        <label for="forecast-source">Forecast Source: </label>
-                        <input class="form-control" id="forecast-source" type="text" value="BOM"/>
+                        <label for="observation-source" class="settings-label">Observation Source: </label>
+                        <select class="form-control" id="observation-source">
+                            <option value="">Any Source</option> <!-- TODO: query the available sources via the web API rather than hardcoding them here. -->
+                            <option value="WOW">WOW</option>
+                            <option value="BOM">BOM</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label for="observation-source" class="settings-label">Observation Source: </label>
-                        <input class="form-control" id="observation-source" type="text" value="WOW"/>
+                        <label for="forecast-source">Forecast Source: </label>
+                        <input class="form-control" id="forecast-source" type="text" value="BOM"/>
                     </div>
                     <div class="form-group">
                         <label for="search-radius" class="settings-label">Search Radius (meters): </label>
