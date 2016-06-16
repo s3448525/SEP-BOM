@@ -77,7 +77,6 @@ function initMap() {
             dis = r * Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1));
         // Set search radius
         document.getElementById('search-radius').value = parseInt(dis);
-        app.getObservations(center.lat(), center.lng(), parseInt(dis));
     });
 
     // Focus to users location

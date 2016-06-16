@@ -3,11 +3,9 @@ var Application = function() {
 
     var config = {};
 
-//    var startDate;
     var chosenDate;
 
-    var loadCount = 0;
-    var sub_day_forecasts = {}
+    var sub_day_forecasts = {};
 
 
     function __init__(options) {
@@ -21,14 +19,15 @@ var Application = function() {
         currentDate.setSeconds(0);
         currentDate.setMilliseconds(0);
         var earliestDate = currentDate.getTime() - (7*24*60*60*1000);
+        var datePicker = $('#date-picker');
         for (var i = currentDate.getTime(); i > earliestDate; i -= (3*60*60*1000)) {
-            var optionDate = new Date(i);
-            $('#date-picker').append($('<option>', {value:optionDate.toISOString(), text:optionDate.toLocaleString()}));
+            var optionDate = moment(i);
+            datePicker.append($('<option>', {value:optionDate.toISOString(), text:optionDate.format('DD/MM/YYYY, hh:mm:ss A')}));
         }
-        chosenDate = new Date($('#date-picker').val());
+        chosenDate = new Date(datePicker.val());
 
-        $('#date-picker').on( "change", function(){
-            chosenDate = new Date($('#date-picker').val());
+        datePicker.on( "change", function(){
+            chosenDate = new Date($(this).val());
             search();
         });
 
@@ -39,11 +38,11 @@ var Application = function() {
         // Feva API call to retrieve JSON object
         var e = document.getElementById("select-data-type"),
             data_type = e.options[e.selectedIndex].value,
-            lat = $('input[name="input_location_coord"]').val().split(",")[0],
-            lon = $('input[name="input_location_coord"]').val().split(",")[1],
+            coords = $('input[name="input_location_coord"]').val().split(","),
             location = $('input[name="input_location"]').val(),
             time = chosenDate.toISOString(),
             max_dist = 10000; // meters
+        var lat = coords[0], lon = coords[1];
         // alert() is only for debug
         if (location == '' || location == null) {
             alert("Please select a location");
@@ -52,11 +51,9 @@ var Application = function() {
 
         // Update location name label
         var displayChosenDate = moment.utc(chosenDate.toISOString());
-        displayChosenDate.local();
-        document.getElementById("location-name-label").innerHTML =
-            $('input[name="input_location"]').val().split(",")[0] +
-            ", " + $('input[name="input_location"]').val().split(",")[1] +
-            ", " + displayChosenDate.calendar(null, {'sameElse':'ddd MMM D [at] ha'});
+        $("#location-name-label").html(
+            location.split(",")[0] + ", " +location.split(",")[1] +
+            ", " + displayChosenDate.calendar(null, {'sameElse':'ddd MMM D [at] ha'}));
 
         // Display data table if hidden
         $('#result-table').show();
@@ -94,7 +91,6 @@ var Application = function() {
             data_table.empty();
             sub_day_forecasts = {};
 
-            // console.log(time);
             //
             if (data.success != true) {
                 // Display error
@@ -166,19 +162,32 @@ var Application = function() {
                     if (j == 0 || observations[j].value > overall_obs_max)
                         overall_obs_max = observations[j].value;
                 }
-                accuracy = "-"
+                var accuracy = "-";
                 if (data.data[i].accuracy == true) {
-                    accuracy = "<span style='color:#00FA00;font-size:18pt;'>✔</span>";
+                    accuracy = '<i class="fa fa-check result-correct" aria-hidden="true"></i>';
                 } else {
-                    accuracy = "<span style='color:#FA0000;font-size:18pt;'>✘</span>";
+                    accuracy = '<i class="fa fa-times result-incorrect" aria-hidden="true"></i>';
                 }
                 // Display the result.
-                data_table.append("<tr>" +
-                    "<td><div style='font-size:14pt;display:inline-block;min-width:29ch;'><span style='color:#808080;'>Issued</span> " + fc_creation_date.calendar(null, {'sameElse':'ddd MMM D [at] ha'}) + "</div>" +
-                    "<div style='font-size:14pt;display:inline-block;margin:0 0 0 2ch;'>" + data.data[i].forecast_value.value.toString() + fc_unit + "</div>" +
-                    "<div style='display:inline-block;font-size:14pt;margin:0 0 0 2ch;'>" + accuracy +
-                    "<span style='display:inline-block;font-size:10pt;color:#808080;margin:0 0 0 1ch;'>Observed " + obs_value_min + " - " + obs_value_max + " " + ob_unit + "</span></div>" +
-                    "</td></tr>");
+                var date = $('<td>');
+                var forecast_value = $('<td>');
+                var forecast_result = $('<td>');
+                var evaluation = $('<td>');
+
+                date.html('<span class="forecast-issued">Issued </span>' + fc_creation_date.from(time, true) + ' before');
+                forecast_value.html(data.data[i].forecast_value.value.toString() + fc_unit);
+                forecast_result.html("Observed " + obs_value_min + " - " + obs_value_max + " " + ob_unit);
+                evaluation.html(accuracy);
+
+                var row = $('<tr>');
+
+                row.append(date).append(forecast_value).append(forecast_result).append(evaluation);
+                data_table.append(row);
+                date.tooltip({
+                    container: 'body',
+                    title: fc_creation_date.format('MMM Do YYYY, [at] hh:mm A'),
+                    placement: 'top'
+                });
             }
 
             // Display overall observation summary.
@@ -197,48 +206,9 @@ var Application = function() {
         });
     }
 
-    // Make API call to get
-    function getObservations(lat, lon, max_dist) {
-        return;
-        // Send search request
-        var temp = $.getJSON('/api/locations/observations', {
-            latitude: lat,
-            longitude: lon,
-            max_distance: max_dist,
-            limit: 200
-        }, function (data) {
-            if (data.success == true) {
-                var raw_data = data.data,
-                    uniq_locations = new Set(),
-                    uniq_locations_string = [];
-
-                $.each(raw_data, function (index, value) {
-                    coord = value.location[0].toString() + "," + value.location[1].toString();
-                    if ($.inArray(coord, uniq_locations_string) == -1) {
-                        uniq_locations.add(value.location);
-                        uniq_locations_string.push(coord);
-                    }
-                });
-
-                uniq_locations = Array.from(uniq_locations);
-                observation_locations = [];
-                $.each(uniq_locations, function (index, value) {
-                    uniq_locations[index].splice(0, 0, raw_data[index].value.toString());
-                    observation_locations.push(uniq_locations[index]);
-                });
-
-                addMarkers(map, observation_locations);
-                // showMarkers();
-                // console.log("current number of observation points: " + uniq_locations.length);
-                document.getElementById("obs_count").innerHTML = uniq_locations.length;
-            }
-        });
-    }
-
 
     return {
         init: __init__,
-        search: search,
-        getObservations: getObservations
+        search: search
     }
 };
