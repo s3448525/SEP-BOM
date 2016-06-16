@@ -43,8 +43,8 @@ class Forecast(Base):
             'id': self.id,
             'name': self.name,
             'creation_date': self.creation_date,
-            'date_range': { 'lower':self.date_range.lower,
-                'upper':self.date_range.upper }
+            'date_range': {'lower': self.date_range.lower,
+                'upper': self.date_range.upper}
         }
 
 
@@ -57,7 +57,7 @@ class ForecastValue(Base):
     id = Column(Integer, primary_key=True)
     id_forecast = Column(Integer, ForeignKey('tbl_forecasts.id'), nullable=False)
     location = Column(Geography(geometry_type='POINT', srid=4326, spatial_index=True))
-    value = Column(DECIMAL(10,4))
+    value = Column(DECIMAL(10, 4))
 
     forecast = relationship(Forecast, lazy='joined')
 
@@ -81,7 +81,7 @@ class RainfallObservation(Base):
 
     time = Column(DateTime, index=True, primary_key=True)
     location = Column(Geography(geometry_type='POINT', srid=4326, spatial_index=True), primary_key=True)
-    value = Column(DECIMAL(10,4))
+    value = Column(DECIMAL(10, 4))
     source = Column(String(128))
 
     def __str__(self):

@@ -30,6 +30,7 @@ def get_observation_locations():
     observation_manager = ObservationManager(web.get_db())
     return observation_manager.api_get_observations_near(web.get_parameters())
 
+
 @api_data_bp.route('/locations/forecasts/')
 @web.api_json_method
 def get_forecast_locations():

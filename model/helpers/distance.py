@@ -25,6 +25,7 @@ class _Within(object):
         """
         return func.ST_DWithin(source, dest, distance)
 
+
 class _Distance(object):
 
     def __call__(self, source, dest):
@@ -46,6 +47,7 @@ point_regex = re.compile(r'POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)')
 
 def decode_point(point):
     return point_regex.findall(point)[0]
+
 
 def unpack_wkb_point(wkb_point):
     coords = struct.unpack_from('dd', unhexlify(str(wkb_point)), 5)

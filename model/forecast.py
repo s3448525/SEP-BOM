@@ -34,7 +34,7 @@ class ForecastManager(object):
                     name=raw_fc['name'],
                     creation_date=raw_fc['creation_time'],
                     date_range=DateTimeRange(raw_fc['start_time'], raw_fc['end_time']))
-                #TODO ensure the forecast description ID is ready for the ForecastValues to reference.
+                # TODO ensure the forecast description ID is ready for the ForecastValues to reference.
                 # Save the forecast description.
                 session.add(fc)
                 session.commit()
@@ -104,7 +104,7 @@ class ForecastManager(object):
         for result in results:
             # Skip if another ForecastValue has already been chosen for this
             # Forecast.
-            #TODO this deduplicating could probably happen in the SQL query.
+            # TODO this deduplicating could probably happen in the SQL query.
             if result[1].id in dedup_ids:
                 continue
             # Found closest ForecastValue for this Forecast.

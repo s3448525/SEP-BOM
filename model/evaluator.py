@@ -62,14 +62,14 @@ class Evaluator(object):
 
             # Find the closest observations to the forecast.
             observations = observation_manager.get_observations_near(
-                    longitude,
-                    latitude,
-                    forecast.date_range.lower,
-                    forecast.date_range.upper,
-                    weather_type,
-                    obs_source,
-                    max_distance=max_distance,
-                    limit=5000)
+                longitude,
+                latitude,
+                forecast.date_range.lower,
+                forecast.date_range.upper,
+                weather_type,
+                obs_source,
+                max_distance=max_distance,
+                limit=5000)
             if len(observations) < 1:
                 raise GeneralException("No observation found.")
             log.debug('Got {} observations within forecast range.'.format(

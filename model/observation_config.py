@@ -8,7 +8,7 @@ import logging
 
 configs = []
 
-# WOW unofficial observations
+
 def wow_scraper():
     '''
     Unofficial WOW observation scraper.
@@ -55,6 +55,7 @@ configs.append({
     'name': 'WOW',
     'fetch_func': wow_scraper
 })
+
 
 def bom_scraper():
     url_list = [
@@ -178,10 +179,10 @@ def bom_scraper():
                 value = None
             if value is not None:
                 yield RainfallObservation(
-                    time = datetime.datetime.strptime(obs['aifstime_utc'], '%Y%m%d%H%M%S'),
-                    location = GISPoint(float(obs['lon']), float(obs['lat'])),
-                    value = obs['rain_trace'],
-                    source = 'BOM')
+                    time=datetime.datetime.strptime(obs['aifstime_utc'], '%Y%m%d%H%M%S'),
+                    location=GISPoint(float(obs['lon']), float(obs['lat'])),
+                    value=obs['rain_trace'],
+                    source='BOM')
 configs.append({
     'name': 'BOM',
     'fetch_func': bom_scraper

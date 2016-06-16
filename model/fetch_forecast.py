@@ -10,6 +10,7 @@ from io import BytesIO
 import tempfile
 import logging
 
+
 def fetch_forecast(fc_filter={'name': [], 'after': None}):
     '''
     A generator function that fetches forecasts specifed by the configuration
@@ -57,9 +58,9 @@ def fetch_ftp(config, fc_filter):
         data_name = os.path.basename(url_parts.path)
         log.debug('Fetching {} ({} {})'.format(url, data_dir, data_name))
         ftp = FTP(url_parts.hostname, config['user'], config['passwd'])
-#TODO detect and handle failed connection
+# TODO detect and handle failed connection
         ftp.login(user=config['user'], passwd=config['passwd'])
-#TODO detect and handle failed login
+# TODO detect and handle failed login
         ftp.cwd(data_dir)
 #        # Skip file if it has not been modified recently.
 #        if fc_filter['after']:

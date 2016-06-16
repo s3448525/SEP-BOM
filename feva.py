@@ -17,6 +17,7 @@ app.config.from_pyfile('feva.cfg')
 # start the db connection
 db = ORM(app.config['DB_HOST'], app.config['DB_PORT'], app.config['DB_USERNAME'], app.config['DB_PASSWORD'])
 
+
 # Close the DB session at the end of each request.
 @app.teardown_appcontext
 def shutdown_session(exception=None):

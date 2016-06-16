@@ -29,8 +29,8 @@ if __name__ == '__main__':
         logging.getLogger().addHandler(log_handler)
 
     # If a datetime CLI parameter is given use it to define the threshold time.
-    #TODO
+    # TODO
 
     # Delete old observations.
     obs_manager = model.observation.ObservationManager(db)
-    obs_manager.delete_old(threshold_time);
+    obs_manager.delete_old(threshold_time)

@@ -29,8 +29,8 @@ if __name__ == '__main__':
         logging.getLogger().addHandler(log_handler)
 
     # If a datetime CLI parameter is given use it to define the threshold time.
-    #TODO
+    # TODO
 
     # Delete old forecastss.
     fc_manager = model.forecast.ForecastManager(db)
-    fc_manager.delete_old(threshold_time);
+    fc_manager.delete_old(threshold_time)

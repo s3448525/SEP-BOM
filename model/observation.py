@@ -6,6 +6,7 @@ from psycopg2.extras import DateTimeRange
 import datetime
 import logging
 
+
 class ObservationManager(object):
 
     EVALUATE_SCHEMA = {

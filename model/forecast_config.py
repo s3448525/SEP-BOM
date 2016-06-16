@@ -54,9 +54,12 @@ import datetime
 
 configs = []
 
+
 # BOM Official Rain Forecast IDV71097
 def adfd_creation_time(dataset, forecast):
     return datetime.datetime.utcfromtimestamp(dataset.getncattr('creationTime'))
+
+
 def adfd_forecast_time(raw_time, forecast, dataset, config):
     start_time = datetime.datetime.utcfromtimestamp(raw_time)
     end_time = start_time + datetime.timedelta(hours=3)

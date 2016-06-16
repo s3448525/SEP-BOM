@@ -4,10 +4,11 @@ export   PYTHONPATH=/opt/feva/model:$PYTHONPATH
 '''
 import datetime
 from datetime import timedelta
-from model.evaluator import  Evaluator
+from model.evaluator import Evaluator
 import re
 import getopt
 import sys
+
 
 def main(argv):
 	lat = 144.9643

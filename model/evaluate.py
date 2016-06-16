@@ -6,7 +6,7 @@ Usage:
     e.g. python3 -m model.evaluate -37.8099 144.9643
 '''
 import datetime
-from model.evaluator import  Evaluator
+from model.evaluator import Evaluator
 import logging
 import sys
 import argparse
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     log_handler = logging.StreamHandler(sys.stderr)
     log_handler.setLevel(logging.DEBUG)
     log_fmt = logging.Formatter(
-	'%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     log_handler.setFormatter(log_fmt)
     logging.getLogger().setLevel(logging.DEBUG)
     logging.getLogger().addHandler(log_handler)
