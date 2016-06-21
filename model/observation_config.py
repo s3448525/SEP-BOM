@@ -163,14 +163,21 @@ def bom_scraper():
         "http://www.bom.gov.au/fwo/IDV60801/IDV60801.99052.json"
     ]
     for url in url_list:
+        # Get raw data.
         try:
             raw_data = urllib.request.urlopen(url)
         except urllib.error.URLError as e:
             logging.getLogger(__name__).error('Error reading {}: {}'.format(
                 url, e.reason))
             continue
-        data = json.load(raw_data)
-        # Create Observation objects
+        # Parse raw data as json.
+        try:
+            data = json.load(raw_data)
+        except Exception:
+            logging.getLogger(__name__).error('Error loading json from {}: {}'.format(
+                url, e.reason))
+            continue
+        # Create Observation objects.
         for obs in data['observations']['data']:
             # Check rain_trace is a valid value, it's not always.
             try:
