@@ -43,7 +43,7 @@ var Application = function() {
             location = $('input[name="input_location"]').val(),
             obs_source = $('#observation-source').val(),
             time = chosenDate.toISOString(),
-            max_dist = 10000; // meters
+            max_dist = 5000; // meters
         var lat = coords[0], lon = coords[1];
         // alert() is only for debug
         if (location == '' || location == null) {
@@ -194,7 +194,18 @@ var Application = function() {
             }
 
             // Display overall observation summary.
-            $('#observation-summary').html(overall_obs_min+" - "+overall_obs_max+" "+ ob_unit);
+            var el = document.getElementById("select-data-type") 
+                data_type_text = el.options[el.selectedIndex].innerHTML;
+            $('#observation-summary').html(data_type_text + ": " +
+                overall_obs_min+" - "+overall_obs_max+" "+ ob_unit +  
+                " (" + moment(chosenDate.getTime()).calendar(null).split(" ")[2] + 
+                moment(chosenDate.getTime()).calendar(null).split(" ")[3].toLowerCase() + " - " +
+                moment(chosenDate.getTime()).add(3, 'hours').calendar(null).split(" ")[2] + 
+                moment(chosenDate.getTime()).add(3, 'hours').calendar(null).split(" ")[3].toLowerCase() 
+                + " accumulation)" );
+            // Display observation time period
+            //$('#observation-summary').innerHTML += moment(chosenDate.getTime()).calendar(null);
+            console.log(moment(chosenDate.getTime()).calendar(null));
 
             // Display observation points on the map.
             var observation_points_list = [];
