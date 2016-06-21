@@ -3,6 +3,7 @@ from model.helpers import validator
 from model.fetch_observation import fetch_observation
 from model.schema import RainfallObservation
 from psycopg2.extras import DateTimeRange
+from sqlalchemy import func
 import datetime
 import logging
 
@@ -64,19 +65,30 @@ class ObservationManager(object):
         '''
         # Fetch each observation.
         obs_count = 0
+        pending_keys = set()
         with self.db.transaction_session() as session:
             for obs in fetch_observation():
                 # Skip adding if object already exists.
-                if session.query(RainfallObservation.time)\
+                obs_key = (obs.time, obs.location)
+                if obs_key in pending_keys:
+                    logging.getLogger(__name__).debug('Avoided dup key before hitting the DB.')
+                    continue
+#                if session.query(RainfallObservation.time)\
+#                        .filter(RainfallObservation.time == obs.time)\
+#                        .filter(RainfallObservation.location == obs.location)\
+#                        .one_or_none() is not None:
+                if session.query(func.count(RainfallObservation.time))\
                         .filter(RainfallObservation.time == obs.time)\
                         .filter(RainfallObservation.location == obs.location)\
-                        .one_or_none() is not None:
+                        .one()[0] > 0:
                     continue
+                pending_keys.add(obs_key)
                 session.add(obs)
                 obs_count += 1
                 # Commit to the DB in batches for improved speed.
                 if obs_count % 1000 == 0:
                     session.commit()
+                    pending_keys.clear()
             # Commit remaining uncommitted observations.
             session.commit()
         return obs_count
